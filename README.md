@@ -1,6 +1,6 @@
 # STITCH
 
-**S**ector **T**ransit **I**nstrumental **T**rend **C**orrection and **H**armonization
+**S**ector-**T**o-sector **I**ntercalibration via **T**rained **C**onditional and **H**omogenization
 
 STITCH uses conditional normalizing flows to correct cross-sector flux offsets in TESS photometry. For each sector observation of a star, STITCH predicts the multiplicative flux offset introduced by that sector's detector position, then divides it out — stitching multi-sector light curves into a coherent baseline without discarding astrophysical signal.
 
