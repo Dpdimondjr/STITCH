@@ -103,14 +103,31 @@ python3 infer_star.py <TIC_ID>
 ## Repository structure
 
 ```
-collect_training_data_v2.py   — MAST downloader + feature/target computation
-train_flow_nsf.py             — NSF training loop
-evaluate_held_out.py          — held-out test evaluation
-infer_star.py                 — single-star inference and plotting
-build_tars_catalog.py         — quiet-star catalog from TARS Table 4
-find_training_stars.py        — alternative MAST-first catalog builder
-plot_*.py                     — diagnostic and paper figure scripts
-make_lightcurve_grid.py       — before/after grid for multiple example stars
+infer_star.py                 — single-star inference and plotting (start here)
+
+data/
+  build_tars_catalog.py       — quiet-star catalog from TARS Table 4
+  find_training_stars.py      — alternative MAST-first catalog builder
+  collect_training_data_v2.py — MAST downloader + feature/target computation
+  collect_nonquiet_*.py       — non-quiet star diagnostics
+  precheck_tess_spoc.py       — confirm SPOC coverage before downloading
+  consolidate_loop.sh         — parallelism helper for data collection
+  watchdog.sh                 — restart shards if they stall
+
+training/
+  train_flow_nsf.py           — NSF training loop (main model)
+  train_flow_nsf_per_ccd.py   — per-CCD variant
+  learning_curve.py           — train/val loss curves
+
+eval/
+  evaluate_held_out.py        — held-out test evaluation (main eval)
+  evaluate_stitching.py       — scatter reduction on quiet stars
+  evaluate_stitching_per_ccd.py — per-CCD breakdown
+
+plots/
+  plot_*.py                   — diagnostic and paper figure scripts
+  make_lightcurve_grid.py     — before/after grid for multiple example stars
+  visualize_stitch.py         — flow visualizations
 ```
 
 ---
