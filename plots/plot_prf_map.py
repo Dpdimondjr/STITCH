@@ -19,7 +19,10 @@ from matplotlib.colors import TwoSlopeNorm
 
 # ── Load model ────────────────────────────────────────────────────────────────
 
-ckpt = torch.load("stitch_nsf.pt", map_location="cpu", weights_only=False)
+import sys as _sys
+_model_pt = next((s for s in _sys.argv[1:] if s.endswith(".pt")), "stitch_nsf_v3.pt")
+print(f"Model: {_model_pt}")
+ckpt = torch.load(_model_pt, map_location="cpu", weights_only=False)
 cfg  = ckpt["flow_config"]
 flow = zuko.flows.NSF(**cfg)
 flow.load_state_dict(ckpt["model_state"])
@@ -37,7 +40,8 @@ K = 0.0  # no shrinkage — show raw model predictions at full amplitude
 
 # ── Load training data for median feature values ───────────────────────────────
 
-df = pd.read_parquet("training_data.parquet")
+_parquet = next((s for s in _sys.argv[1:] if s.endswith(".parquet")), "training_data_topup.parquet")
+df = pd.read_parquet(_parquet)
 df = df[(df.flux_offset > 0.85) & (df.flux_offset < 1.15)]
 if "log_sector_median" not in df.columns:
     df["log_sector_median"] = np.log1p(df["sector_median"].clip(lower=0))
@@ -155,7 +159,8 @@ for mode in ("offset", "uncertainty"):
 
     fig.suptitle(title, fontsize=13, y=1.005)
 
-    outfile = f"stitch_prf_map_{mode}.png"
+    _stem = _model_pt.replace(".pt","").replace("stitch_nsf","stitch_prf_map")
+    outfile = f"plots/{_stem}_{mode}.png"
     plt.savefig(outfile, dpi=150, bbox_inches="tight")
     print(f"Saved → {outfile}")
     plt.close()

@@ -27,7 +27,12 @@ from torch.utils.data import DataLoader, TensorDataset
 
 # ── 1. Load data ──────────────────────────────────────────────────────────────
 
-df = pd.read_parquet("training_data.parquet")
+import sys as _sys
+_parquet = next((s for s in _sys.argv[1:] if s.endswith(".parquet")), "training_data.parquet")
+_out_pt  = next((s for s in _sys.argv[1:] if s.endswith(".pt")),      "stitch_nsf.pt")
+print(f"Parquet: {_parquet}  →  {_out_pt}")
+
+df = pd.read_parquet(_parquet)
 print(f"Loaded {len(df):,} records from {df['tic_id'].nunique():,} stars")
 
 # ── 2. Feature engineering ────────────────────────────────────────────────────
@@ -43,17 +48,19 @@ CONTINUOUS = ["col", "row", "delta_sub_col", "delta_sub_row",
 
 # ── 3. Clean data ─────────────────────────────────────────────────────────────
 
+MIN_SECTORS = 6  # n<6 LOO labels too noisy; sufficient data to afford stricter cut
+
 df = df.dropna(subset=["col", "row", "flux_offset"])
 df = df[(df["flux_offset"] > 0.85) & (df["flux_offset"] < 1.15)]
-df = df[df["n_sectors_total"] >= 3]
+df = df[df["n_sectors_total"] >= MIN_SECTORS]
 for col in CONTINUOUS:
     if df[col].isna().any():
         df[col] = df[col].fillna(df[col].median())
-print(f"After cleaning (n_sectors >= 3): {len(df):,} records")
+print(f"After cleaning (n_sectors >= {MIN_SECTORS}): {len(df):,} records")
 
-# Sample weights: downweight low-sector-count stars whose LOO labels are noisy.
-# n=3 → 0.375, n=4 → 0.5, n=5 → 0.625, n=8+ → 1.0
-df["sample_weight"] = (df["n_sectors_total"].clip(upper=8) / 8.0).astype(np.float32)
+# Sample weights: upweight high-sector stars with cleaner LOO labels.
+# Clip raised to 20 so CVZ stars (n=20-44) get proportionally more influence.
+df["sample_weight"] = (df["n_sectors_total"].clip(upper=20) / 20.0).astype(np.float32)
 print(f"  mean weight={df['sample_weight'].mean():.3f}  "
       f"n>=5: {(df['n_sectors_total']>=5).mean()*100:.1f}%  "
       f"n>=8: {(df['n_sectors_total']>=8).mean()*100:.1f}%")
@@ -125,8 +132,8 @@ print(f"Target y_mean={y_mean:.5f}  y_std={y_std:.5f}")
 # bins        : number of rational-quadratic spline bins per layer
 
 TRANSFORMS    = 8
-HIDDEN        = [128, 128]
-BINS          = 8
+HIDDEN        = [256, 256]
+BINS          = 16
 
 flow = zuko.flows.NSF(
     features=1,
@@ -146,7 +153,10 @@ LR         = 3e-4
 MAX_EPOCHS = 300
 PATIENCE   = 25
 
-device = torch.device("cpu")
+device = (torch.device("mps")  if torch.backends.mps.is_available() else
+          torch.device("cuda") if torch.cuda.is_available() else
+          torch.device("cpu"))
+print(f"Device: {device}")
 flow   = flow.to(device)
 opt    = torch.optim.Adam(flow.parameters(), lr=LR, weight_decay=1e-5)
 sched  = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, patience=10, factor=0.5)
@@ -194,7 +204,7 @@ for epoch in range(1, MAX_EPOCHS + 1):
 
     if val_nll < best_val_nll:
         best_val_nll  = val_nll
-        best_state    = {k: v.clone() for k, v in flow.state_dict().items()}
+        best_state    = {k: v.cpu().clone() for k, v in flow.state_dict().items()}
         patience_count = 0
     else:
         patience_count += 1
@@ -211,10 +221,10 @@ flow.eval()
 with torch.no_grad():
     # Point estimate: use mean of the learned distribution (via samples)
     samples = flow(C_test_t).sample((200,)).squeeze(-1)  # (200, N_test)
-    mu_test = samples.mean(0).numpy()                     # (N_test,)
+    mu_test = samples.mean(0).cpu().numpy()               # (N_test,)
 
 # Convert back to flux_offset units
-y_test_fo  = y_test  * y_std + y_mean   # standardised → original
+y_test_fo  = y_test  * y_std + y_mean   # already numpy (built from pandas)
 mu_test_fo = mu_test * y_std + y_mean
 
 residuals = y_test_fo - mu_test_fo
@@ -260,6 +270,5 @@ torch.save({
         "hidden_features": HIDDEN,
         "bins":            BINS,
     },
-}, "stitch_nsf.pt")
-print("\nSaved → stitch_nsf.pt")
-print("Next: retrain on full dataset once collection completes.")
+}, _out_pt)
+print(f"\nSaved → {_out_pt}")

@@ -30,6 +30,10 @@ tess_cache/
 
 # Generated outputs
 endpoint_baseline_images/
+*_dashboard.html
+stitch_dataset_viewer.html
+eval/dashboard.html
+eval/dashboard_data.json
 
 # Images and media (commit only what's explicitly needed)
 *.png

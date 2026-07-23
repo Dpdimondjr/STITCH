@@ -15,11 +15,13 @@ matplotlib.use("Agg")
 
 CACHE_DIR = "./tess_cache"
 
-# Three test stars: varied scatter levels and cameras
+# Five clean examples: start visibly scattered, end genuinely flat after STITCH
 TARGETS = [
-    288470684,   # 5.1% → 1.8%, 12 sectors, Cam 3
-    237203089,   # 3.9% → 0.8%, 10 sectors (most dramatic %)
-    47733410,    # 3.8% → 1.3%, 10 sectors, Tmag 11.7 (brighter)
+    137802879,   # Cam2 ·  6 sec · 2.61% → 0.74%
+    279978253,   # Cam2 ·  8 sec · 2.12% → 0.67%
+    313485282,   # Cam3 · 10 sec · 2.52% → 0.72%
+    441689824,   # Cam3 ·  6 sec · 2.04% → 0.51%  (cleanest)
+    356112006,   # Cam4 · 12 sec · 2.29% → 0.67%
 ]
 
 # ── Style ─────────────────────────────────────────────────────────────────────
@@ -33,7 +35,9 @@ CAM_COLS = {1:"#e05c3a", 2:"#2a78d6", 3:"#1baf7a", 4:"#c47900"}
 
 # ── Load model ────────────────────────────────────────────────────────────────
 print("Loading model...")
-ckpt = torch.load("stitch_nsf.pt", map_location="cpu", weights_only=False)
+_model_pt = next((s for s in __import__("sys").argv[1:] if s.endswith(".pt")), "stitch_nsf.pt")
+ckpt = torch.load(_model_pt, map_location="cpu", weights_only=False)
+print(f"Model: {_model_pt}")
 cfg  = ckpt["flow_config"]
 flow = zuko.flows.NSF(
     features=cfg["features"], context=cfg["context"],
@@ -182,11 +186,11 @@ if not results:
 
 # ── Figure ────────────────────────────────────────────────────────────────────
 n = len(results)
-fig, axes = plt.subplots(n, 2, figsize=(16, 3.2 * n), facecolor=SURFACE)
+fig, axes = plt.subplots(n, 2, figsize=(16, 3.0 * n), facecolor=SURFACE)
 if n == 1:
     axes = [axes]
 
-fig.subplots_adjust(hspace=0.42, wspace=0.06, left=0.07, right=0.98, top=0.93, bottom=0.06)
+fig.subplots_adjust(hspace=0.38, wspace=0.06, left=0.07, right=0.98, top=0.94, bottom=0.04)
 
 for row_i, r in enumerate(results):
     ax_b = axes[row_i][0]
@@ -229,8 +233,8 @@ for row_i, r in enumerate(results):
                   markeredgecolor=SURFACE, markeredgewidth=1.2, zorder=5)
 
     # Row label
-    ax_b.set_ylabel(f"TIC {r['tic_id']}\nTmag {r['tmag']:.1f}", color=INK, fontsize=9,
-                    fontweight="600", labelpad=6)
+    ax_b.set_ylabel(f"TIC {r['tic_id']}\nTmag {r['tmag']:.1f}",
+                    color=INK, fontsize=9, fontweight="600", labelpad=6)
     ax_a.set_ylabel("")
     ax_a.yaxis.set_tick_params(labelleft=False)
 
@@ -258,6 +262,7 @@ fig.legend(handles=cam_handles, loc="upper right", fontsize=8, ncol=4,
 fig.suptitle("STITCH — before vs. after correction · 2-min SPOC PDCSAP light curves",
              color=INK, fontsize=12, fontweight="700", x=0.5, y=0.995)
 
-out = "stitch_lightcurve_grid.png"
+_stem = _model_pt.replace(".pt", "").replace("stitch_nsf", "stitch_lcgrid")
+out = f"{_stem}.png"
 plt.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
 print(f"\nSaved → {out}")
