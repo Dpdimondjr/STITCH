@@ -269,24 +269,55 @@ def process_star(tic_id):
             else:
                 col = row = np.nan
 
+            # Background / scattered-light features from SAP_BKG column
+            try:
+                bkg_arr = lc["sap_bkg"].value.astype(float)
+                qual    = lc.quality.value.astype(int)
+                finite_bkg = bkg_arr[np.isfinite(bkg_arr)]
+                median_sap_bkg    = float(np.median(finite_bkg)) if len(finite_bkg) else np.nan
+                p90_sap_bkg       = float(np.percentile(finite_bkg, 90)) if len(finite_bkg) else np.nan
+                bkg_rms           = float(np.std(finite_bkg)) if len(finite_bkg) else np.nan
+                scatter_flag_frac = float(np.mean((qual & 4096) > 0))
+            except Exception:
+                median_sap_bkg = p90_sap_bkg = bkg_rms = scatter_flag_frac = np.nan
+
+            flfrcsap = _flt(lc.meta.get("FLFRCSAP"))
+            teff     = _flt(lc.meta.get("TEFF"))
+
+            # PDC quality metrics — correlated with flux_offset (pr_wght2 r≈0.48)
+            pdc_noi   = _flt(lc.meta.get("PDC_NOI"))
+            pdc_corp  = _flt(lc.meta.get("PDC_CORP"))
+            pdc_totp  = _flt(lc.meta.get("PDC_TOTP"))
+            pr_wght2  = _flt(lc.meta.get("PR_WGHT2"))
+
             new_sec_meds[sec] = med
             new_sec_meta[sec] = {
-                "tic_id":        tic_id,
-                "sector":        sec,
-                "cam":           cam_tp,
-                "ccd":           ccd_tp,
-                "col":           col,
-                "row":           row,
-                "delta_sub_col": (col + pc1_med) % 1.0 if (np.isfinite(col) and np.isfinite(pc1_med)) else np.nan,
-                "delta_sub_row": (row + pc2_med) % 1.0 if (np.isfinite(row) and np.isfinite(pc2_med)) else np.nan,
-                "tmag":          tmag,
-                "crowdsap":      crowdsap,
-                "cdpp1_0":       cdpp1_0,
-                "pdcvar":        pdcvar,
-                "jitter_rms":    jitter_rms,
-                "sector_median": med,
-                "ra":            ra,
-                "dec":           dec,
+                "tic_id":             tic_id,
+                "sector":             sec,
+                "cam":                cam_tp,
+                "ccd":                ccd_tp,
+                "col":                col,
+                "row":                row,
+                "delta_sub_col":      (col + pc1_med) % 1.0 if (np.isfinite(col) and np.isfinite(pc1_med)) else np.nan,
+                "delta_sub_row":      (row + pc2_med) % 1.0 if (np.isfinite(row) and np.isfinite(pc2_med)) else np.nan,
+                "tmag":               tmag,
+                "crowdsap":           crowdsap,
+                "cdpp1_0":            cdpp1_0,
+                "pdcvar":             pdcvar,
+                "jitter_rms":         jitter_rms,
+                "sector_median":      med,
+                "ra":                 ra,
+                "dec":                dec,
+                "median_sap_bkg":     median_sap_bkg,
+                "p90_sap_bkg":        p90_sap_bkg,
+                "bkg_rms":            bkg_rms,
+                "scatter_flag_frac":  scatter_flag_frac,
+                "flfrcsap":           flfrcsap,
+                "teff":               teff,
+                "pdc_noi":            pdc_noi,
+                "pdc_corp":           pdc_corp,
+                "pdc_totp":           pdc_totp,
+                "pr_wght2":           pr_wght2,
             }
         except Exception:
             continue

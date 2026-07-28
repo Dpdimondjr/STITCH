@@ -44,11 +44,12 @@ ccd_dummies = pd.get_dummies(df["ccd"].astype(int), prefix="ccd")
 df["log_sector_median"] = np.log1p(df["sector_median"].clip(lower=0))
 
 CONTINUOUS = ["col", "row", "delta_sub_col", "delta_sub_row",
-              "sector", "tmag", "crowdsap", "cdpp1_0", "pdcvar", "jitter_rms"]
+              "sector", "tmag", "crowdsap", "cdpp1_0", "pdcvar", "jitter_rms",
+              "pdc_noi", "pr_wght2"]
 
 # ── 3. Clean data ─────────────────────────────────────────────────────────────
 
-MIN_SECTORS = 6  # n<6 LOO labels too noisy; sufficient data to afford stricter cut
+MIN_SECTORS = 4
 
 df = df.dropna(subset=["col", "row", "flux_offset"])
 df = df[(df["flux_offset"] > 0.85) & (df["flux_offset"] < 1.15)]
