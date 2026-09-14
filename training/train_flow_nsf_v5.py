@@ -1,25 +1,25 @@
 """
-STITCH normalizing flow — v2, Neural Spline Flow (NSF).
+STITCH normalizing flow — v5.
 
-Uses zuko's NSF implementation: a stack of rational-quadratic spline coupling
-transforms conditioned on the detector/star context vector c.
+New features over v4/KNN model:
+  - spatial_poly_pred : 2D degree-3 polynomial fitted per (sector, cam, ccd) on
+                        flux_offset_loo values. Uses all ~1000-3000 stars on the CCD
+                        rather than K=20 neighbours.  r=0.624 vs KNN r=0.604.
+  - loo_prev          : Previous (chronologically) sector's flux_offset_loo for the
+                        same star. Captures temporal autocorrelation (r=0.207 direct;
+                        r=0.077 partial after KNN). Falls back to sector_ccd_mean_loo
+                        for first-observed sectors.
+  - sector_gap        : Sector-number gap since the previous observation.  Tells the
+                        model how much to trust loo_prev (gap>4 → near-zero signal).
+                        Set to 99 for first observations.
+  - n_sectors_total   : Number of sectors the star was observed in. Calibrates how
+                        reliable the spatial mean features are.
 
-Why NSF over the Gaussian baseline (train_flow.py):
-  - flux_offset residuals have kurtosis ~9 (vs 0 for Gaussian) and are
-    negatively skewed — the Gaussian assumption is clearly violated.
-  - NSF learns an invertible monotone transformation from N(0,1) to the
-    true conditional distribution p(flux_offset | c), capturing heavy tails
-    and asymmetry without assuming a parametric form.
-
-Architecture:
-  - Context c: 18D (10 continuous + 4 cam-OHE + 4 ccd-OHE), z-scored
-  - Flow: zuko.flows.NSF with T=8 transforms, hidden=[128,128], K=8 spline bins
-  - Base: standard Gaussian (transformed by the spline stack)
-  - Output: samples and log-probabilities under p(flux_offset | c)
+Context dimension: 28D (was 24D in KNN model).
 """
 
 import sys as _flush_sys
-_flush_sys.stdout.reconfigure(line_buffering=True)   # flush every print immediately
+_flush_sys.stdout.reconfigure(line_buffering=True)
 
 import numpy as np
 import pandas as pd
@@ -31,8 +31,8 @@ from torch.utils.data import DataLoader, TensorDataset
 # ── 1. Load data ──────────────────────────────────────────────────────────────
 
 import sys as _sys
-_parquet   = next((s for s in _sys.argv[1:] if s.endswith(".parquet")), "training_data.parquet")
-_out_pt    = next((s for s in _sys.argv[1:] if s.endswith(".pt")),      "stitch_nsf.pt")
+_parquet   = next((s for s in _sys.argv[1:] if s.endswith(".parquet")), "training_data_topup_pdc.parquet")
+_out_pt    = next((s for s in _sys.argv[1:] if s.endswith(".pt")),      "stitch_nsf_v5.pt")
 _tmag_arg  = next((s for s in _sys.argv[1:] if s.startswith("--tmag=")), None)
 _target    = next((s.split("=")[1] for s in _sys.argv[1:] if s.startswith("--target=")), "flux_offset_loo")
 TMAG_MAX   = float(_tmag_arg.split("=")[1]) if _tmag_arg else 13.0
@@ -46,11 +46,8 @@ print(f"Loaded {len(df):,} records from {df['tic_id'].nunique():,} stars")
 cam_dummies = pd.get_dummies(df["cam"].astype(int), prefix="cam")
 ccd_dummies = pd.get_dummies(df["ccd"].astype(int), prefix="ccd")
 
-# log_sector_median: absolute flux level (e-/s) spans 4–800K, log-compress.
 df["log_sector_median"] = np.log1p(df["sector_median"].clip(lower=0))
 
-# per-star mean Gaia label: how much this star deviates from its Gaia RP
-# expected flux on average across sectors — an absolute calibration anchor.
 if "flux_offset" in df.columns and "gaiarp" in df.columns:
     df["perstar_gaia_offset"] = df.groupby("tic_id")["flux_offset"].transform("mean")
     GAIA_FEATURES = ["gaiarp", "perstar_gaia_offset"]
@@ -76,8 +73,7 @@ for col in CONTINUOUS:
         df[col] = df[col].fillna(df[col].median())
 print(f"After cleaning (n_sectors >= {MIN_SECTORS}, tmag <= {TMAG_MAX}): {len(df):,} records")
 
-# Sector-CCD leave-one-out mean: mean LOO offset of all OTHER stars on same
-# chip in the same sector. Directly captures the local spatial systematic.
+# Sector-CCD leave-one-out mean
 _grp = df.groupby(["sector", "cam", "ccd"])[_target]
 _grp_sum   = _grp.transform("sum")
 _grp_count = _grp.transform("count")
@@ -85,8 +81,7 @@ df["sector_ccd_mean_loo"] = (_grp_sum - df[_target]) / (_grp_count - 1).clip(low
 _r = df["sector_ccd_mean_loo"].corr(df[_target])
 print(f"sector_ccd_mean_loo: std={df['sector_ccd_mean_loo'].std():.5f}  r={_r:.3f}")
 
-# Spatial KNN leave-one-out mean: mean LOO offset of the K nearest stars
-# by detector position within the same sector/cam/ccd. Captures sub-CCD gradients.
+# Spatial KNN leave-one-out mean (K=20)
 from scipy.spatial import cKDTree as _cKDTree
 _K = 20
 print(f"Computing spatial KNN mean LOO (k={_K}) …", flush=True)
@@ -99,21 +94,101 @@ for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
     _coords = _g[["col", "row"]].values.astype(np.float32)
     _vals   = _g[_target].values
     _k      = min(_K, _n - 1)
-    _, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)  # col 0 = self
+    _, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)
     _knn_vals[_g.index.values] = _vals[_nn[:, 1:]].mean(axis=1)
 df["spatial_knn_mean_loo"] = _knn_vals
-# Fill any singleton-group NaNs with the CCD-level mean (safe fallback)
 df["spatial_knn_mean_loo"] = df["spatial_knn_mean_loo"].fillna(df["sector_ccd_mean_loo"])
 _r2 = df["spatial_knn_mean_loo"].corr(df[_target])
-_nan2 = df["spatial_knn_mean_loo"].isna().sum()
-print(f"spatial_knn_mean_loo: std={df['spatial_knn_mean_loo'].std():.5f}  r={_r2:.3f}  NaN={_nan2}")
+print(f"spatial_knn_mean_loo: std={df['spatial_knn_mean_loo'].std():.5f}  r={_r2:.3f}")
 
-CONTINUOUS = CONTINUOUS + ["sector_ccd_mean_loo", "spatial_knn_mean_loo"]
+# 2D polynomial spatial field (degree 3): fits all stars on a CCD per sector,
+# capturing large-scale gradients better than K=20 neighbours.
+def _poly2d_design(c, r, degree=3):
+    terms = []
+    for d in range(degree + 1):
+        for i in range(d + 1):
+            terms.append(c ** (d - i) * r ** i)
+    return np.column_stack(terms)
 
-# Upweight stars with more sectors — cleaner LOO denominators.
-df["sample_weight"] = (df["n_sectors_total"].clip(upper=20) / 20.0).astype(np.float32)
-print(f"  mean weight={df['sample_weight'].mean():.3f}  "
-      f"n>=5: {(df['n_sectors_total']>=5).mean()*100:.1f}%  "
+print("Computing 2D polynomial spatial field (degree=3) …", flush=True)
+_poly_vals  = np.full(len(df), np.nan, dtype=np.float32)
+_n_fallback = 0
+for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
+    _idx = _g.index.values
+    _n   = len(_g)
+    if _n < 15:
+        _poly_vals[_idx] = _g["sector_ccd_mean_loo"].values.astype(np.float32)
+        _n_fallback += 1
+        continue
+    _c = _g["col"].values.astype(np.float64) - _g["col"].mean()
+    _r = _g["row"].values.astype(np.float64) - _g["row"].mean()
+    _y = _g[_target].values.astype(np.float64)
+    _X = _poly2d_design(_c, _r, degree=3)
+    try:
+        _coef, _, _, _ = np.linalg.lstsq(_X, _y, rcond=None)
+        _res  = _y - _X @ _coef
+        _mask = np.abs(_res) <= 3.0 * (_res.std() or 1e-9)
+        if _mask.sum() >= 15:
+            _coef, _, _, _ = np.linalg.lstsq(_X[_mask], _y[_mask], rcond=None)
+        _poly_vals[_idx] = np.clip(_X @ _coef, 0.85, 1.15).astype(np.float32)
+    except Exception:
+        _poly_vals[_idx] = _g["sector_ccd_mean_loo"].values.astype(np.float32)
+        _n_fallback += 1
+df["spatial_poly_pred"] = _poly_vals
+_r3 = df["spatial_poly_pred"].corr(df[_target])
+print(f"spatial_poly_pred: std={df['spatial_poly_pred'].std():.5f}  r={_r3:.3f}  fallbacks={_n_fallback}")
+
+# Temporal feature: previous sector's LOO value for the same star.
+# Captures autocorrelation across consecutive sectors (r=0.28 for gap=1).
+print("Computing temporal LOO feature (previous sector) …", flush=True)
+_loo_prev_arr  = np.full(len(df), np.nan, dtype=np.float32)
+_sector_gap_arr = np.full(len(df), np.nan, dtype=np.float32)
+for _tic, _g in df.groupby("tic_id"):
+    _gs  = _g.sort_values("sector")
+    _idx = _gs.index.values
+    if len(_idx) < 2:
+        continue
+    _loo_prev_arr[_idx[1:]]   = _gs[_target].values[:-1].astype(np.float32)
+    _sector_gap_arr[_idx[1:]] = np.diff(_gs["sector"].values).astype(np.float32)
+df["loo_prev"]   = _loo_prev_arr
+df["sector_gap"] = _sector_gap_arr
+# No previous sector: fall back to spatial mean; mark gap as 99
+_no_prev = df["loo_prev"].isna()
+df.loc[_no_prev, "loo_prev"]   = df.loc[_no_prev, "sector_ccd_mean_loo"]
+df.loc[_no_prev, "sector_gap"] = 99.0
+df["sector_gap"] = df["sector_gap"].clip(upper=99)
+_r4  = df["loo_prev"].corr(df[_target])
+_cov = (df["sector_gap"] <= 3).mean()
+print(f"loo_prev:   std={df['loo_prev'].std():.5f}  r={_r4:.3f}")
+print(f"sector_gap: mean={df['sector_gap'].mean():.1f}  gap<=3: {_cov*100:.1f}% of rows")
+
+CONTINUOUS = CONTINUOUS + ["sector_ccd_mean_loo", "spatial_knn_mean_loo",
+                            "spatial_poly_pred", "loo_prev", "sector_gap", "n_sectors_total"]
+
+# Weight by inverse oracle ceiling: quiet stars with many sectors dominate the loss.
+# oracle_ceil_i = loo_std_i / sqrt(N_i - 1)  — lower = cleaner label.
+# weight_i = 1 / oracle_ceil_i, bounded to [1, 20] then normalized to mean 1.
+_star_stats = (
+    df.groupby("tic_id")[_target]
+    .agg(["std", "count"])
+    .rename(columns={"std": "_loo_std", "count": "_n"})
+    .reset_index()
+)
+_star_stats["_loo_std"] = _star_stats["_loo_std"].fillna(0.02).clip(lower=1e-5)
+_star_stats["_oracle"]  = _star_stats["_loo_std"] / np.sqrt((_star_stats["_n"] - 1).clip(lower=1))
+# Soft inverse weighting: weight = (median_oracle / oracle_ceil), clipped to [0.2, 5].
+# Quietest stars (oracle_ceil = p10) get ~5x weight; noisiest (p90) get ~0.2x.
+_med_oracle = float(_star_stats["_oracle"].median())
+_star_stats["_w"] = (_med_oracle / _star_stats["_oracle"]).clip(lower=0.2, upper=5.0)
+_star_stats["_w"] /= _star_stats["_w"].mean()   # normalize to mean 1
+df = df.merge(_star_stats[["tic_id", "_w"]], on="tic_id", how="left")
+df["sample_weight"] = df["_w"].fillna(1.0).astype(np.float32)
+df = df.drop(columns=["_w"])
+
+_wmed = df["sample_weight"].median()
+_wmax = df["sample_weight"].max()
+print(f"  Oracle-ceiling weights: median={_wmed:.2f}  max={_wmax:.2f}")
+print(f"  n>=5: {(df['n_sectors_total']>=5).mean()*100:.1f}%  "
       f"n>=8: {(df['n_sectors_total']>=8).mean()*100:.1f}%")
 
 # ── 4. Stratified star-level train/val/test split ─────────────────────────────
@@ -158,7 +233,6 @@ def make_context(split_df):
                       cam_oh.reset_index(drop=True),
                       ccd_oh.reset_index(drop=True)], axis=1).values.astype(np.float32)
 
-# NSF works best when the target is ~N(0,1), so also standardise the target.
 y_mean = float(train_df[_target].mean())
 y_std  = float(train_df[_target].std())
 
@@ -176,11 +250,6 @@ print(f"\nContext dimension: {context_dim}")
 print(f"Target y_mean={y_mean:.5f}  y_std={y_std:.5f}")
 
 # ── 6. NSF model ──────────────────────────────────────────────────────────────
-# zuko.flows.NSF(features, context, transforms, hidden_features, bins)
-# features=1  : target is 1D (flux_offset)
-# context=D   : conditioning vector dimension
-# transforms  : number of spline coupling layers
-# bins        : number of rational-quadratic spline bins per layer
 
 TRANSFORMS    = 8
 HIDDEN        = [256, 256]
@@ -234,8 +303,8 @@ for epoch in range(1, MAX_EPOCHS + 1):
     train_nlls = []
     for cb, yb, wb in train_loader:
         cb, yb, wb = cb.to(device), yb.to(device), wb.to(device)
-        log_probs = flow(cb).log_prob(yb)           # (batch,)
-        nll = -(log_probs * wb).sum() / wb.sum()    # weighted mean NLL
+        log_probs = flow(cb).log_prob(yb)
+        nll = -(log_probs * wb).sum() / wb.sum()
         opt.zero_grad()
         nll.backward()
         torch.nn.utils.clip_grad_norm_(flow.parameters(), 5.0)
@@ -270,12 +339,10 @@ print(f"\nBest val NLL: {best_val_nll:.4f}")
 
 flow.eval()
 with torch.no_grad():
-    # Point estimate: use mean of the learned distribution (via samples)
-    samples = flow(C_test_t).sample((200,)).squeeze(-1)  # (200, N_test)
-    mu_test = samples.mean(0).cpu().numpy()               # (N_test,)
+    samples = flow(C_test_t).sample((200,)).squeeze(-1)
+    mu_test = samples.mean(0).cpu().numpy()
 
-# Convert back to flux_offset units
-y_test_fo  = y_test  * y_std + y_mean   # already numpy (built from pandas)
+y_test_fo  = y_test  * y_std + y_mean
 mu_test_fo = mu_test * y_std + y_mean
 
 residuals = y_test_fo - mu_test_fo
@@ -283,26 +350,40 @@ baseline_mae = np.abs(y_test_fo - y_test_fo.mean()).mean()
 model_mae    = np.abs(residuals).mean()
 
 print(f"\n=== Test Set Evaluation ===")
-print(f"  Mean absolute error:  {model_mae:.4f}")
-print(f"  Residual std:         {residuals.std():.4f}")
-print(f"  Residual mean:        {residuals.mean():.4f}  (should be ~0)")
-print(f"\n  Baseline (global mean): MAE = {baseline_mae:.4f}")
-print(f"  Improvement over baseline:  {(1 - model_mae/baseline_mae)*100:.1f}%")
+print(f"  MAE:              {model_mae:.4f}")
+print(f"  Residual std:     {residuals.std():.4f}")
+print(f"  Residual mean:    {residuals.mean():.4f}")
+print(f"  Baseline MAE:     {baseline_mae:.4f}")
+print(f"  Improvement:      {(1 - model_mae/baseline_mae)*100:.1f}%")
 
 print(f"\n  Per-camera breakdown (test set):")
 print(f"  {'Cam':<6} {'n':>5} {'MAE':>8} {'baseline':>10} {'improvement':>12}")
 print(f"  {'─'*50}")
-train_cam_counts = train_df.groupby("cam").size()
 test_df_reset = test_df.reset_index(drop=True)
 for cam, cam_df in test_df_reset.groupby("cam"):
-    pos     = cam_df.index.tolist()
-    y_cam   = y_test_fo[pos]
-    mu_cam  = mu_test_fo[pos]
-    mae     = np.abs(y_cam - mu_cam).mean()
-    base    = np.abs(y_cam - y_cam.mean()).mean()
-    improv  = (1 - mae / base) * 100
-    n_train = train_cam_counts.get(cam, 0)
-    print(f"  Cam{int(cam):<3} {len(y_cam):>5} {mae:>8.4f} {base:>10.4f} {improv:>11.1f}%")
+    pos    = cam_df.index.tolist()
+    y_cam  = y_test_fo[pos]
+    mu_cam = mu_test_fo[pos]
+    mae    = np.abs(y_cam - mu_cam).mean()
+    base   = np.abs(y_cam - y_cam.mean()).mean()
+    print(f"  Cam{int(cam):<3} {len(y_cam):>5} {mae:>8.4f} {base:>10.4f} {(1-mae/base)*100:>11.1f}%")
+
+# Within-star CV on test set
+print(f"\n  Within-star CV (test set):")
+test_df_reset["pred_fo"] = mu_test_fo
+test_df_reset["raw_fo"]  = y_test_fo
+cvs = []
+for tic, g in test_df_reset.groupby("tic_id"):
+    if len(g) < 2:
+        continue
+    raw_cv  = g["raw_fo"].std()  / g["raw_fo"].mean()
+    pred_cv = (g["raw_fo"] / g["pred_fo"]).std() / (g["raw_fo"] / g["pred_fo"]).mean()
+    cvs.append((raw_cv, pred_cv))
+cv_raw  = np.median([c[0] for c in cvs]) * 100
+cv_pred = np.median([c[1] for c in cvs]) * 100
+print(f"  Raw median CV:   {cv_raw:.3f}%")
+print(f"  Model median CV: {cv_pred:.3f}%")
+print(f"  Reduction:       {(1 - cv_pred/cv_raw)*100:.1f}%")
 
 # ── 9. Save ───────────────────────────────────────────────────────────────────
 
