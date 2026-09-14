@@ -62,6 +62,32 @@ for col in CONTINUOUS:
     if col in df.columns and df[col].isna().any():
         df[col] = df[col].fillna(df[col].median())
 
+# ── Compute derived features (not stored in parquet) ───────────────────────────
+from scipy.spatial import cKDTree
+df = df.reset_index(drop=True)
+
+df["perstar_gaia_offset"] = df.groupby("tic_id")["flux_offset"].transform("mean")
+
+_target = "flux_offset_loo"
+_grp_sum   = df.groupby(["sector", "cam", "ccd"])[_target].transform("sum")
+_grp_count = df.groupby(["sector", "cam", "ccd"])[_target].transform("count")
+df["sector_ccd_mean_loo"] = (_grp_sum - df[_target]) / (_grp_count - 1).clip(lower=1)
+
+_K = 20
+_knn_vals = np.full(len(df), np.nan, dtype=np.float32)
+for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
+    _n = len(_g)
+    if _n < 2:
+        continue
+    _coords = _g[["col", "row"]].values.astype(np.float32)
+    _vals   = _g[_target].values
+    _k      = min(_K, _n - 1)
+    _, _nn  = cKDTree(_coords).query(_coords, k=_k + 1)
+    _knn_vals[_g.index.values] = _vals[_nn[:, 1:]].mean(axis=1)
+df["spatial_knn_mean_loo"] = _knn_vals
+df["spatial_knn_mean_loo"] = df["spatial_knn_mean_loo"].fillna(df["sector_ccd_mean_loo"])
+print("Derived features computed.")
+
 # ── Reproduce train/test split to get test stars ───────────────────────────────
 star_cam = (df.groupby("tic_id")["cam"]
               .agg(lambda x: x.mode()[0])
