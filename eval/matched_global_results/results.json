@@ -1,0 +1,120 @@
+{
+  "seed": 20260928,
+  "dataset_sha256": "ab2e6231ce9b95e08cc66f3454f3b7b9a88247bc29c19f5403e67644a62c43cf",
+  "columns": [
+    "col",
+    "row",
+    "delta_sub_col",
+    "delta_sub_row",
+    "sector",
+    "cam",
+    "ccd",
+    "tmag",
+    "crowdsap",
+    "gaiarp",
+    "knn_mean",
+    "knn_median",
+    "knn_mad",
+    "ccd_mean"
+  ],
+  "reference_stars": 16275,
+  "coverage": {
+    "train": {
+      "stars": 5966,
+      "rows": 114969
+    },
+    "validation": {
+      "stars": 1493,
+      "rows": 28786
+    },
+    "test": {
+      "stars": 2970,
+      "rows": 57331
+    }
+  },
+  "selections": {
+    "knn": {
+      "column": "knn_median",
+      "strength": 0.9
+    },
+    "residual_strength": 1.4500000000000002,
+    "global_strength": 1.35
+  },
+  "training_history": [
+    0.00506183796260018,
+    0.00506150353777457,
+    0.005041938565906179,
+    0.0050435540659883316,
+    0.005043909474466979
+  ],
+  "metrics": {
+    "raw": {
+      "median_cv_pct": 1.4392337537039188,
+      "reduction_pct": 0.0,
+      "stars_worse_pct": 0.0
+    },
+    "knn_median": {
+      "median_cv_pct": 1.0400863557798705,
+      "reduction_pct": 27.733326632788334,
+      "stars_worse_pct": 13.939393939393941
+    },
+    "knn_tuned": {
+      "median_cv_pct": 1.029052788633362,
+      "reduction_pct": 28.49995450808055,
+      "stars_worse_pct": 11.481481481481481
+    },
+    "residual_hgb": {
+      "median_cv_pct": 0.940904359036171,
+      "reduction_pct": 34.624632265973446,
+      "stars_worse_pct": 8.922558922558922
+    },
+    "global_hgb": {
+      "median_cv_pct": 0.936712314887923,
+      "reduction_pct": 34.91590143176807,
+      "stars_worse_pct": 8.417508417508419
+    }
+  },
+  "paired_comparisons": {
+    "knn_median": {
+      "gain_over_tuned_knn_pct": -1.072206136398668,
+      "ci95": [
+        -1.8369168806284797,
+        -0.36543579116210767
+      ]
+    },
+    "knn_tuned": {
+      "gain_over_tuned_knn_pct": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    "residual_hgb": {
+      "gain_over_tuned_knn_pct": 8.565977428063432,
+      "ci95": [
+        7.172724463447402,
+        9.99001883470176
+      ]
+    },
+    "global_hgb": {
+      "gain_over_tuned_knn_pct": 8.973346631524336,
+      "ci95": [
+        7.787381989217345,
+        10.638530440827711
+      ]
+    }
+  },
+  "limitations": [
+    "New random partition of previously examined data, not a pristine final holdout.",
+    "Matched feature set differs from the historical compact NSF; no new NSF was trained.",
+    "One training seed; star-bootstrap intervals condition on reference catalog and models.",
+    "No independent noise-floor or astrophysical-preservation claim."
+  ],
+  "global_vs_residual_hgb": {
+    "gain_pct": 0.4455335027403029,
+    "ci95": [
+      -0.48784139196840937,
+      1.6760063383864987
+    ]
+  }
+}

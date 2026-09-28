@@ -1,0 +1,113 @@
+{
+  "seed": 20260928,
+  "source_sha256": "9a659c5ccff13392fc707082e3ebbd7c01c5bda1f6195e0bc7a037c2b2d50786",
+  "quiet_catalog_sha256": "d9cfe6a2ab8eeb7b42b2f15e6cdd256a501aea65d998ebc75db3fb88692d378d",
+  "source_stars": 1000,
+  "eligible_stars": 994,
+  "rows": 9654,
+  "raw_median_cv_pct": 1.548256974193888,
+  "corrected_median_cv_pct": 0.9785381161398445,
+  "controlled_scaling": {
+    "status": "ok",
+    "rows": 8864,
+    "stars": 966,
+    "groups": 348,
+    "fixed_effects": "TIC and sector/camera/CCD",
+    "slope_fraction_per_1e_minus3_susceptibility": -0.0010589959594214493,
+    "tic_bootstrap_ci95": [
+      -0.0030221770617215728,
+      0.0013652495015657616
+    ],
+    "design_condition_number": 11.82685569884771,
+    "interpretation": "association only; not an independently measured background bias"
+  },
+  "spatial_coherence": {
+    "status": "ok",
+    "cells": 1351,
+    "mean_cross_star_product": 1.2360980703618576e-05,
+    "permutation_null95": [
+      -7.746230755931045e-06,
+      1.527360030970961e-05
+    ],
+    "one_sided_permutation_p": 0.04590818363273453,
+    "limitations": "shared model error, time dependence and heteroscedasticity can mimic coherence"
+  },
+  "fold_scaling": {
+    "0": {
+      "status": "ok",
+      "rows": 1042,
+      "stars": 144,
+      "groups": 79,
+      "fixed_effects": "TIC and sector/camera/CCD",
+      "slope_fraction_per_1e_minus3_susceptibility": -0.0008185262534564198,
+      "tic_bootstrap_ci95": [
+        -0.004445865833530651,
+        0.0025469977174103087
+      ],
+      "design_condition_number": 12.49860562299077,
+      "interpretation": "association only; not an independently measured background bias"
+    },
+    "1": {
+      "status": "ok",
+      "rows": 886,
+      "stars": 157,
+      "groups": 74,
+      "fixed_effects": "TIC and sector/camera/CCD",
+      "slope_fraction_per_1e_minus3_susceptibility": -0.0072601907525273925,
+      "tic_bootstrap_ci95": [
+        -0.010476058653770702,
+        -0.0037013142501054826
+      ],
+      "design_condition_number": 11.66067940072289,
+      "interpretation": "association only; not an independently measured background bias"
+    },
+    "2": {
+      "status": "ok",
+      "rows": 816,
+      "stars": 130,
+      "groups": 65,
+      "fixed_effects": "TIC and sector/camera/CCD",
+      "slope_fraction_per_1e_minus3_susceptibility": -0.001169941355076318,
+      "tic_bootstrap_ci95": [
+        -0.004957792993149401,
+        0.005343960584299103
+      ],
+      "design_condition_number": 13.103319803833026,
+      "interpretation": "association only; not an independently measured background bias"
+    },
+    "3": {
+      "status": "ok",
+      "rows": 839,
+      "stars": 145,
+      "groups": 76,
+      "fixed_effects": "TIC and sector/camera/CCD",
+      "slope_fraction_per_1e_minus3_susceptibility": -0.003124954683490894,
+      "tic_bootstrap_ci95": [
+        -0.00622934306650778,
+        -1.6430125744592205e-05
+      ],
+      "design_condition_number": 13.848110416161212,
+      "interpretation": "association only; not an independently measured background bias"
+    },
+    "4": {
+      "status": "ok",
+      "rows": 965,
+      "stars": 156,
+      "groups": 79,
+      "fixed_effects": "TIC and sector/camera/CCD",
+      "slope_fraction_per_1e_minus3_susceptibility": 0.0015261018240902823,
+      "tic_bootstrap_ci95": [
+        -0.0013425807882396445,
+        0.0043127204740086135
+      ],
+      "design_condition_number": 12.376983977163647,
+      "interpretation": "association only; not an independently measured background bias"
+    }
+  },
+  "limitations": [
+    "Exploratory re-split of an already examined cache cohort; not a fresh final holdout.",
+    "No independent residual-background measurement is available; SAP_BKG is not bgbias.",
+    "Bootstrap conditions on trained models and fixed within-group demeaning.",
+    "No causal mechanism, signal-preservation guarantee or irreducible noise floor established."
+  ]
+}

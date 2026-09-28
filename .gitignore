@@ -44,3 +44,13 @@ eval/dashboard_data.json
 
 # Allow the README figure
 !figures/stitch_lightcurve_grid.png
+
+# Private working notes and correspondence: public Markdown is allowlisted.
+*.md
+!README.md
+!MODEL_VERSIONS.md
+!docs/STATUS.md
+*.html
+logs/
+.agents/
+.codex/

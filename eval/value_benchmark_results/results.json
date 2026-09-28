@@ -1,0 +1,462 @@
+{
+  "args": {
+    "data": "training_data_v3.parquet",
+    "out": "eval/value_benchmark_results",
+    "train_stars": 6000,
+    "val_stars": 1500,
+    "test_stars": 3000,
+    "epochs": 30,
+    "samples": 500,
+    "seed": 20260915,
+    "bootstrap": 1000,
+    "full_flow": false,
+    "reuse_flow": true
+  },
+  "dataset_sha256": "ab2e6231ce9b95e08cc66f3454f3b7b9a88247bc29c19f5403e67644a62c43cf",
+  "original_rows": 850136,
+  "selected_rows": 777124,
+  "coverage": {
+    "train": {
+      "requested_stars": 6000,
+      "evaluated_stars": 5948,
+      "rows": 114516,
+      "unsupported_rows": 160,
+      "rows_removed_for_coverage": 285
+    },
+    "validation": {
+      "requested_stars": 1500,
+      "evaluated_stars": 1493,
+      "rows": 28871,
+      "unsupported_rows": 19,
+      "rows_removed_for_coverage": 38
+    },
+    "test": {
+      "requested_stars": 3000,
+      "evaluated_stars": 2969,
+      "rows": 57242,
+      "unsupported_rows": 99,
+      "rows_removed_for_coverage": 168
+    }
+  },
+  "gaia_calibration": {
+    "1": [
+      -0.3989863702097961,
+      8.180793132198234
+    ],
+    "2": [
+      -0.401035795642197,
+      8.192026651583499
+    ],
+    "3": [
+      -0.4006825476790404,
+      8.19763342088075
+    ],
+    "4": [
+      -0.4009304999152217,
+      8.192047460865362
+    ]
+  },
+  "selections": {
+    "Static surface / TIC BM (proxy)": {
+      "sigma": 2,
+      "validation_cv": {
+        "1": 0.011110553564917584,
+        "2": 0.011088495075173017,
+        "4": 0.011103064051273702
+      }
+    },
+    "Static surface / Gaia": {
+      "sigma": 2,
+      "validation_cv": {
+        "1": 0.012938866180914672,
+        "2": 0.012840865714978708,
+        "4": 0.013040219088237917
+      }
+    },
+    "Validation-calibrated LOO KNN": {
+      "column": "knn_loo_median",
+      "weight": 0.9,
+      "validation_cv": 0.00994496750632642
+    },
+    "Ridge / 24 inputs": {
+      "parameter": 0.1,
+      "validation_cv": {
+        "0.1": 0.01695749062474189,
+        "10": 0.016977788322857373,
+        "1000": 0.016983639876574686
+      }
+    },
+    "Boosted trees / 24 inputs": {
+      "parameter": 31,
+      "validation_cv": {
+        "15": 0.010734690276076118,
+        "31": 0.010586027811560662
+      }
+    }
+  },
+  "flow": {
+    "config": {
+      "features": 1,
+      "context": 24,
+      "transforms": 4,
+      "hidden_features": [
+        64,
+        64
+      ],
+      "bins": 8
+    },
+    "validation_nll": [
+      -2.0542376830965896,
+      -2.401535381414782,
+      -2.5629939997944793,
+      -2.6375696842169423,
+      -2.427447227960827,
+      -2.4976141777909304,
+      -2.4799552120213892,
+      -2.6643515201003223,
+      -2.6836920592845246,
+      -2.7505666496211054,
+      -2.771779179180801,
+      -2.756978894769784,
+      -2.7747114648660745,
+      -2.7552907825536166,
+      -2.7680816761379012,
+      -2.67252535600508,
+      -2.797620801789236,
+      -2.7911173368713413,
+      -2.7987700770168917,
+      -2.792130582618588,
+      -2.8127223551903024,
+      -2.801869587318373,
+      -2.811556097682498,
+      -2.813151313676299,
+      -2.8100061818628554,
+      -2.8175865744930033,
+      -2.762798844580878,
+      -2.7990181667143825,
+      -2.789916338941569,
+      -2.8166468453388296
+    ],
+    "y_mean": 1.0033342356260908,
+    "y_std": 0.8464490231017759
+  },
+  "metrics": [
+    {
+      "method": "Raw",
+      "median_cv_percent": 1.4483075570418213,
+      "reduction_percent": 0.0,
+      "reduction_ci95": [
+        0.0,
+        0.0
+      ],
+      "stars_worse_percent": 0.0
+    },
+    {
+      "method": "Sector CCD / LOO",
+      "median_cv_percent": 1.3998439984907483,
+      "reduction_percent": 3.3462200977574352,
+      "reduction_ci95": [
+        0.9033638979277281,
+        5.568460443003053
+      ],
+      "stars_worse_percent": 39.50825193667902
+    },
+    {
+      "method": "Sector KNN / TIC BM",
+      "median_cv_percent": 1.0987041526878334,
+      "reduction_percent": 24.13875441401794,
+      "reduction_ci95": [
+        22.4362841017663,
+        25.456000060069695
+      ],
+      "stars_worse_percent": 19.16470191983833
+    },
+    {
+      "method": "Sector KNN / Gaia",
+      "median_cv_percent": 1.35655124067173,
+      "reduction_percent": 6.335416529725524,
+      "reduction_ci95": [
+        4.532905135989781,
+        7.613476062656437
+      ],
+      "stars_worse_percent": 32.132030986864265
+    },
+    {
+      "method": "Sector KNN / LOO",
+      "median_cv_percent": 1.1062180514242677,
+      "reduction_percent": 23.619948950364787,
+      "reduction_ci95": [
+        22.060476624486288,
+        25.188625096328952
+      ],
+      "stars_worse_percent": 18.76052542943752
+    },
+    {
+      "method": "Sector CCD median / LOO",
+      "median_cv_percent": 1.1074334293219543,
+      "reduction_percent": 23.536031836780925,
+      "reduction_ci95": [
+        22.270201483162086,
+        25.033753390350263
+      ],
+      "stars_worse_percent": 14.381946783428765
+    },
+    {
+      "method": "Sector KNN median / TIC BM",
+      "median_cv_percent": 1.0372143044376634,
+      "reduction_percent": 28.38438911717198,
+      "reduction_ci95": [
+        26.900007909615265,
+        29.718124760350335
+      ],
+      "stars_worse_percent": 13.034691815426068
+    },
+    {
+      "method": "Sector KNN median / Gaia",
+      "median_cv_percent": 1.2786846987713212,
+      "reduction_percent": 11.711798191328649,
+      "reduction_ci95": [
+        10.168282321475901,
+        12.922367870682306
+      ],
+      "stars_worse_percent": 23.273829572246548
+    },
+    {
+      "method": "Sector KNN median / LOO",
+      "median_cv_percent": 1.0335595074177082,
+      "reduction_percent": 28.63673862692805,
+      "reduction_ci95": [
+        27.19652038257922,
+        30.05909800078211
+      ],
+      "stars_worse_percent": 12.02425058942405
+    },
+    {
+      "method": "Static surface / TIC BM (proxy)",
+      "median_cv_percent": 1.1045008717678626,
+      "reduction_percent": 23.73851352237548,
+      "reduction_ci95": [
+        22.213719422816215,
+        25.138444653631296
+      ],
+      "stars_worse_percent": 16.73964297743348
+    },
+    {
+      "method": "Static surface / Gaia",
+      "median_cv_percent": 1.3303815789482958,
+      "reduction_percent": 8.142329819392113,
+      "reduction_ci95": [
+        6.891963592233909,
+        9.694719487395881
+      ],
+      "stars_worse_percent": 27.147187605254295
+    },
+    {
+      "method": "Validation-calibrated LOO KNN",
+      "median_cv_percent": 1.0235780386048217,
+      "reduction_percent": 29.32592020057625,
+      "reduction_ci95": [
+        27.97664213068286,
+        30.76189978755834
+      ],
+      "stars_worse_percent": 10.47490737622095
+    },
+    {
+      "method": "Ridge / 24 inputs",
+      "median_cv_percent": 1.6885782298211638,
+      "reduction_percent": -16.589754821834735,
+      "reduction_ci95": [
+        -18.87798023245422,
+        -14.25370717241211
+      ],
+      "stars_worse_percent": 64.63455708992927
+    },
+    {
+      "method": "Boosted trees / 24 inputs",
+      "median_cv_percent": 1.0686006263242362,
+      "reduction_percent": 26.21728574648462,
+      "reduction_ci95": [
+        24.795466211092606,
+        27.528262475652
+      ],
+      "stars_worse_percent": 14.213539912428427
+    },
+    {
+      "method": "Fresh compact NSF / 24 inputs",
+      "median_cv_percent": 1.0371151263771112,
+      "reduction_percent": 28.39123697625203,
+      "reduction_ci95": [
+        26.988268666867164,
+        29.85863785959541
+      ],
+      "stars_worse_percent": 11.822162344223644
+    }
+  ],
+  "paired_comparisons": [
+    {
+      "flow_vs": "Static surface / TIC BM (proxy)",
+      "residual_scatter_gain_percent": 6.101013327666626,
+      "ci95": [
+        4.3714473972542,
+        7.933018192587858
+      ]
+    },
+    {
+      "flow_vs": "Sector KNN / TIC BM",
+      "residual_scatter_gain_percent": 5.605606036898358,
+      "ci95": [
+        4.2164163273676465,
+        7.4873292484892415
+      ]
+    },
+    {
+      "flow_vs": "Sector KNN / Gaia",
+      "residual_scatter_gain_percent": 23.54766297927986,
+      "ci95": [
+        22.32780846483783,
+        25.18713076707181
+      ]
+    },
+    {
+      "flow_vs": "Sector KNN / LOO",
+      "residual_scatter_gain_percent": 6.246772501875708,
+      "ci95": [
+        4.687282731288671,
+        7.8261726400671625
+      ]
+    },
+    {
+      "flow_vs": "Sector KNN median / TIC BM",
+      "residual_scatter_gain_percent": 0.00956196420813793,
+      "ci95": [
+        -1.4265327173886038,
+        1.5644612120347492
+      ]
+    },
+    {
+      "flow_vs": "Sector KNN median / LOO",
+      "residual_scatter_gain_percent": -0.34401685958911354,
+      "ci95": [
+        -1.8384618777208344,
+        1.1583778487059593
+      ]
+    },
+    {
+      "flow_vs": "Validation-calibrated LOO KNN",
+      "residual_scatter_gain_percent": -1.3225262033504936,
+      "ci95": [
+        -2.9577373565853944,
+        0.02587773172993712
+      ]
+    },
+    {
+      "flow_vs": "Boosted trees / 24 inputs",
+      "residual_scatter_gain_percent": 2.9464234973760606,
+      "ci95": [
+        1.6841710963651417,
+        4.566622093985638
+      ]
+    }
+  ],
+  "injection_sensitivity": [
+    {
+      "method": "Sector KNN / LOO",
+      "period_days": 54,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0
+    },
+    {
+      "method": "Validation-calibrated LOO KNN",
+      "period_days": 54,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0
+    },
+    {
+      "method": "Ridge / 24 inputs",
+      "period_days": 54,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999364057995239
+    },
+    {
+      "method": "Boosted trees / 24 inputs",
+      "period_days": 54,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0
+    },
+    {
+      "method": "Fresh compact NSF / 24 inputs",
+      "period_days": 54,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0000117187346982
+    },
+    {
+      "method": "Sector KNN / LOO",
+      "period_days": 135,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999999999999998
+    },
+    {
+      "method": "Validation-calibrated LOO KNN",
+      "period_days": 135,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999999999999999
+    },
+    {
+      "method": "Ridge / 24 inputs",
+      "period_days": 135,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0000463874669447
+    },
+    {
+      "method": "Boosted trees / 24 inputs",
+      "period_days": 135,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999999999999999
+    },
+    {
+      "method": "Fresh compact NSF / 24 inputs",
+      "period_days": 135,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0001541006904362
+    },
+    {
+      "method": "Sector KNN / LOO",
+      "period_days": 365,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999999999999999
+    },
+    {
+      "method": "Validation-calibrated LOO KNN",
+      "period_days": 365,
+      "amplitude": 0.02,
+      "median_response_slope": 0.9999999999999998
+    },
+    {
+      "method": "Ridge / 24 inputs",
+      "period_days": 365,
+      "amplitude": 0.02,
+      "median_response_slope": 1.000148939827763
+    },
+    {
+      "method": "Boosted trees / 24 inputs",
+      "period_days": 365,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0
+    },
+    {
+      "method": "Fresh compact NSF / 24 inputs",
+      "period_days": 365,
+      "amplitude": 0.02,
+      "median_response_slope": 1.0003104979370319
+    }
+  ],
+  "limitations": [
+    "Static BM is a reconstruction, not Roland's numerical surface.",
+    "Fresh compact flow is not validation of the canonical checkpoint.",
+    "Source quiet-star sample and Tmag<=13, >=5 sectors selection limit generalization.",
+    "Bootstrap describes test-star uncertainty with models and reference catalog fixed.",
+    "Single training seed; flow means are estimated by Monte Carlo sampling.",
+    "Injection changes the star-level anchor only; quality metrics remain fixed and sector times are approximate.",
+    "Gaia conversion is an empirical per-camera fit, not independent detector ground truth."
+  ]
+}
