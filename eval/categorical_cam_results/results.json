@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "config": "numeric",
+      "val_cv_pct": 0.9301
+    },
+    {
+      "config": "cam_ccd_cat",
+      "val_cv_pct": 0.9303,
+      "delta_pp": 0.0003
+    },
+    {
+      "config": "cam_ccd_combo_cat",
+      "val_cv_pct": 0.9291,
+      "delta_pp": -0.001
+    },
+    {
+      "config": "cam_ccd_sector_cat",
+      "val_cv_pct": 0.9375,
+      "delta_pp": 0.0074
+    }
+  ],
+  "best_config": "cam_ccd_combo_cat",
+  "test_cv_median_pct": 0.9522814577672154,
+  "elapsed_s": 19
+}

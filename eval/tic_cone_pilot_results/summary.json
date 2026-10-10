@@ -1,0 +1,29 @@
+{
+  "n_requested": 100,
+  "n_success": 100,
+  "n_fail": 0,
+  "failures": [],
+  "n_neighbors_r_loo": -0.7618289999482877,
+  "n_neighbors_r_abs_loo": 0.6220970170097385,
+  "cont_ratio_r_loo": -0.016958921961922217,
+  "cont_ratio_r_abs_loo": 0.10721984420344013,
+  "bright_neighbors_r_loo": -0.06285594420585712,
+  "bright_neighbors_r_abs_loo": -0.042201294888755785,
+  "feature_quantiles": {
+    "n_neighbors": [
+      2.99,
+      13.0,
+      83.1900000000001
+    ],
+    "cont_ratio": [
+      1.0254842069090364,
+      1.7784820092031481,
+      9.646084075467094
+    ],
+    "bright_neighbors": [
+      1.0,
+      1.5,
+      4.0
+    ]
+  }
+}

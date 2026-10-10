@@ -19,7 +19,7 @@ from astropy.io import fits
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os, re, sys
 
-CACHE_DIR   = "./tess_cache"
+CACHE_DIR   = os.environ.get("STITCH_CACHE", "./tess_cache")
 PARQUET_IN  = next((s for s in sys.argv[1:] if s.endswith(".parquet")),
                    "training_data_topup.parquet")
 PARQUET_OUT = PARQUET_IN.replace(".parquet", "_bkg.parquet")
@@ -51,6 +51,8 @@ def extract(path):
 
             data    = hdul[1].data
             bkg     = np.array(data["SAP_BKG"],  dtype=np.float64)
+            sap_flux = np.array(data["SAP_FLUX"], dtype=np.float64)
+            pdc_flux = np.array(data["PDCSAP_FLUX"], dtype=np.float64)
             quality = np.array(data["QUALITY"],   dtype=np.int32)
             h1 = hdul[1].header
             def _hflt(key):
@@ -72,6 +74,8 @@ def extract(path):
         p90_bkg           = float(np.percentile(finite_bkg, 90))
         bkg_rms           = float(np.std(finite_bkg))
         scatter_flag_frac = float(np.mean((quality & SCATTER_BIT) > 0))
+        sap_med = float(np.nanmedian(sap_flux))
+        pdc_med = float(np.nanmedian(pdc_flux))
 
         return {
             "tic_id":             tic_id,
@@ -80,6 +84,9 @@ def extract(path):
             "p90_sap_bkg":        p90_bkg,
             "bkg_rms":            bkg_rms,
             "scatter_flag_frac":  scatter_flag_frac,
+            "sap_median_spoc":    sap_med,
+            "pdcsap_median_spoc": pdc_med,
+            "pdcsap_sap_ratio":   pdc_med / sap_med if np.isfinite(sap_med) and sap_med != 0 else np.nan,
             "flfrcsap":           flfrcsap,
             "teff":               teff,
             "pdc_noi":            pdc_noi,

@@ -1,0 +1,46 @@
+{
+  "rows": {
+    "train": 638388,
+    "val": 79615,
+    "test": 79985
+  },
+  "stars": {
+    "train": 37372,
+    "val": 4671,
+    "test": 4672
+  },
+  "validation": {
+    "residual_k20": {
+      "alpha": 1.05,
+      "validation_scatter": 0.011118926407682899
+    },
+    "residual_multiscale": {
+      "alpha": 1.0,
+      "validation_scatter": 0.011052159629866436
+    }
+  },
+  "test": {
+    "raw": {
+      "median_scatter_pct": 1.5056654970306529,
+      "reduction_pct": 0.0,
+      "stars_worse_pct": 0.0
+    },
+    "median_knn": {
+      "median_scatter_pct": 1.197105482846217,
+      "reduction_pct": 20.493264592497606,
+      "stars_worse_pct": 17.543859649122805
+    },
+    "residual_k20": {
+      "median_scatter_pct": 1.1175141007251075,
+      "reduction_pct": 25.77939104475895,
+      "stars_worse_pct": 14.875216209537928
+    },
+    "residual_multiscale": {
+      "median_scatter_pct": 1.113708318239262,
+      "reduction_pct": 26.03215518748194,
+      "stars_worse_pct": 13.367926859402028
+    }
+  },
+  "elapsed_seconds": 26.639917135238647,
+  "reference_policy": "training stars only; own TIC excluded"
+}

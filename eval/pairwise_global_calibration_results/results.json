@@ -1,0 +1,86 @@
+{
+  "method": "log-flux global calibration with alternating nuisance star intercepts",
+  "objective": "within-star centered squared error (equivalent to all-pairs squared differences)",
+  "reference_policy": "training stars only; every query TIC excluded",
+  "target_derived_star_features": false,
+  "rows": {
+    "train": 638260,
+    "val": 79845,
+    "test": 79786
+  },
+  "stars": {
+    "train": 37360,
+    "val": 4670,
+    "test": 4670
+  },
+  "backfit_history": [
+    {
+      "iteration": 1,
+      "within_star_rmse_log": 0.012798687202413053,
+      "within_star_mae_log": 0.008407786914303203
+    },
+    {
+      "iteration": 2,
+      "within_star_rmse_log": 0.012708946339911481,
+      "within_star_mae_log": 0.008327532433810535
+    },
+    {
+      "iteration": 3,
+      "within_star_rmse_log": 0.01266713858003572,
+      "within_star_mae_log": 0.008291352134537456
+    },
+    {
+      "iteration": 4,
+      "within_star_rmse_log": 0.012634299005823964,
+      "within_star_mae_log": 0.008270972762901884
+    },
+    {
+      "iteration": 5,
+      "within_star_rmse_log": 0.012627846276337706,
+      "within_star_mae_log": 0.008261830801357653
+    }
+  ],
+  "residual_strength": 1.1,
+  "validation_scatter_pct": 0.9427513487901755,
+  "prior_hgb_alpha": 1.0,
+  "prior_hgb_validation_scatter_pct": 1.1079860896715306,
+  "common_test_stars": 4009,
+  "test": {
+    "raw": {
+      "median_scatter_pct": 1.4861419584294078,
+      "reduction_from_raw_pct": 0.0,
+      "stars_worse_than_raw_pct": 0.0
+    },
+    "median_knn": {
+      "median_scatter_pct": 1.1904926366811777,
+      "reduction_from_raw_pct": 19.89374703212604,
+      "stars_worse_than_raw_pct": 17.11149912696433
+    },
+    "pairwise_global": {
+      "median_scatter_pct": 0.9449743893892911,
+      "reduction_from_raw_pct": 36.41425813803387,
+      "stars_worse_than_raw_pct": 7.857321027687703
+    },
+    "residual_k20": {
+      "median_scatter_pct": 1.110707979708104,
+      "reduction_from_raw_pct": 25.262322794389824,
+      "stars_worse_than_raw_pct": 12.87104015964081
+    }
+  },
+  "comparisons": {
+    "pairwise_vs_median_knn_pct": 20.62324786622247,
+    "pairwise_vs_median_knn_bootstrap95": [
+      19.373721904040462,
+      20.698227838178017,
+      21.999799423026534
+    ],
+    "pairwise_vs_residual_hgb_pct": 14.92143689850577,
+    "pairwise_vs_residual_hgb_bootstrap95": [
+      13.587010875585444,
+      15.036657391129609,
+      16.50782259258413
+    ],
+    "pairwise_better_star_fraction_pct": 72.38712895984037
+  },
+  "elapsed_seconds": 82.77435898780823
+}

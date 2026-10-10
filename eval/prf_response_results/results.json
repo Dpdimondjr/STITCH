@@ -1,0 +1,107 @@
+{
+  "selected_stars": 300,
+  "attempted_rows": 2252,
+  "successful_rows": 2252,
+  "evaluated_stars": 300,
+  "evaluated_rows": 2252,
+  "failures": {},
+  "prf_package": "TESS-PRF==0.1.3",
+  "prf_model_version": "UPDATED_2.0, sectors >=4",
+  "model_manifest_sha256": {
+    "start_s0004/cam3_ccd3/manifest.json": "57ee8e78a9a70ac37bdede2a8de1a2bb5c4b03d16503feb84f74105ed934bb1f",
+    "start_s0004/cam3_ccd4/manifest.json": "852ffacef49a339aa397fd92f78dfde06db3589b9dc1f974705d38f5a31c96d9"
+  },
+  "feature_source_sha256": "bc739afbab71d3047427ca088489a6d19fc17e9122b80fe82aa0aff63708e10f",
+  "coordinate_audit": {
+    "wcs_mom_distance_quantiles_px": {
+      "0.5": 0.10435677867498849,
+      "0.9": 0.2060695735061995,
+      "0.99": 0.3408553699068396
+    },
+    "wcs_v3_distance_quantiles_px": {
+      "0.5": NaN,
+      "0.9": NaN,
+      "0.99": NaN
+    },
+    "v3_matched_rows": 0,
+    "camera_ccd_disagreements": 0
+  },
+  "capture_quantiles": {
+    "0.01": 0.6621364138621256,
+    "0.5": 0.8290676812047512,
+    "0.99": 0.9504062195732239
+  },
+  "capture_vs_flfrcsap_correlation": 0.9950888185819088,
+  "experiments": [
+    {
+      "seed": 20260928,
+      "train_stars": 180,
+      "validation_stars": 60,
+      "test_stars": 60,
+      "strengths": {
+        "core": 0.9500000000000001,
+        "core_prf": 1.3
+      },
+      "median_cv_pct": {
+        "raw": 1.1869519633326842,
+        "core": 0.7874244636085292,
+        "core_prf": 0.722464167312262
+      },
+      "prf_gain_over_core_pct": 8.249717820370195,
+      "paired_star_ci95": [
+        -6.19459590549416,
+        20.929574056147338
+      ]
+    },
+    {
+      "seed": 20260929,
+      "train_stars": 180,
+      "validation_stars": 60,
+      "test_stars": 60,
+      "strengths": {
+        "core": 1.0,
+        "core_prf": 0.9
+      },
+      "median_cv_pct": {
+        "raw": 1.1714227492972846,
+        "core": 0.7421781660331328,
+        "core_prf": 0.8015474666330714
+      },
+      "prf_gain_over_core_pct": -7.999332682779059,
+      "paired_star_ci95": [
+        -17.20659932373261,
+        5.632507411935034
+      ]
+    },
+    {
+      "seed": 20260930,
+      "train_stars": 180,
+      "validation_stars": 60,
+      "test_stars": 60,
+      "strengths": {
+        "core": 1.3,
+        "core_prf": 1.05
+      },
+      "median_cv_pct": {
+        "raw": 1.1637362423943012,
+        "core": 0.8144506967836178,
+        "core_prf": 0.7412895995154939
+      },
+      "prf_gain_over_core_pct": 8.982876134436069,
+      "paired_star_ci95": [
+        1.8467238307959637,
+        17.113781745020646
+      ]
+    }
+  ],
+  "limitations": [
+    "Camera 3 CCDs 3/4 only, bounded previously examined quiet-star cache cohort.",
+    "No new KNN/NSF comparison; tests only the incremental PRF block on a matched global baseline.",
+    "Product sky coordinates/WCS are used; no fresh Gaia epoch-propagation solution.",
+    "PRF package normalizes finite 13x13 support; capture excludes unknown far wings.",
+    "Motion sampled at 25 retained cadences, median-centered; no within-exposure jitter convolution.",
+    "Additional 0.25-pixel blur is a response probe, not a measured focus correction.",
+    "Bootstrap conditions on models; three splits reuse the same cohort.",
+    "No independent background pixels or signal-preservation validation in this pilot."
+  ]
+}

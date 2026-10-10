@@ -1,0 +1,11 @@
+{
+  "training_stars": 37372,
+  "training_rows": 638388,
+  "means_match": true,
+  "stds_match": true,
+  "target_match": true,
+  "maximum_mean_difference": 0.0,
+  "maximum_std_difference": 0.0,
+  "self_first_assumption_errors": 337,
+  "split_order": "Exact reproduction of historical trainer, including second-split strata ordering"
+}

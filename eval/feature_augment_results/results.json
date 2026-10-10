@@ -1,0 +1,50 @@
+{
+  "feature_results": [
+    {
+      "features": "baseline",
+      "val_cv_pct": 0.9301
+    },
+    {
+      "features": "+n_sectors_total",
+      "val_cv_pct": 0.9337,
+      "delta_pp": 0.0036
+    },
+    {
+      "features": "+scatter_flag_frac",
+      "val_cv_pct": 0.9292,
+      "delta_pp": -0.0009
+    },
+    {
+      "features": "+pdc_totp",
+      "val_cv_pct": 0.9313,
+      "delta_pp": 0.0013
+    },
+    {
+      "features": "+pdc_corp",
+      "val_cv_pct": 0.9322,
+      "delta_pp": 0.0021
+    },
+    {
+      "features": "+bkg_rms",
+      "val_cv_pct": 0.9334,
+      "delta_pp": 0.0033
+    },
+    {
+      "features": "+median_sap_bkg",
+      "val_cv_pct": 0.9295,
+      "delta_pp": -0.0006
+    },
+    {
+      "features": "all_extras",
+      "val_cv_pct": 0.9352,
+      "delta_pp": 0.0051
+    }
+  ],
+  "best": {
+    "features": "+scatter_flag_frac",
+    "val_cv_pct": 0.9292,
+    "delta_pp": -0.0009
+  },
+  "test_cv_median_pct": 0.9552739028721959,
+  "elapsed_s": 25
+}

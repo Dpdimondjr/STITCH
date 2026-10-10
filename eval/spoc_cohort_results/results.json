@@ -1,0 +1,200 @@
+{
+  "extraction": {
+    "cache_products": 246256,
+    "eligible_tics": 8573,
+    "chosen_tics": 1000,
+    "selected_products": 10326,
+    "readable_products": 9741,
+    "elapsed_seconds": 99.27556908300001
+  },
+  "analysis_products": 9741,
+  "analysis_tics": 1000,
+  "split_tics": {
+    "test": 160,
+    "train": 692,
+    "val": 148
+  },
+  "results": {
+    "raw": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.5312350835872817,
+      "reduction_pct": 0.0,
+      "stars_worse_pct": 0.0
+    },
+    "global/core": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 0.961160220121184,
+      "reduction_pct": 37.22974150582823,
+      "stars_worse_pct": 9.375
+    },
+    "pairwise/core": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.0838790747622034,
+      "reduction_pct": 29.2153708872083,
+      "stars_worse_pct": 15.0
+    },
+    "global/core+aperture": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 0.9644379183165339,
+      "reduction_pct": 37.01568566094312,
+      "stars_worse_pct": 8.75
+    },
+    "pairwise/core+aperture": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.0963977960739546,
+      "reduction_pct": 28.39781377622418,
+      "stars_worse_pct": 15.0
+    },
+    "global/core+aperture+pointing": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 0.9652300319478953,
+      "reduction_pct": 36.963955287217246,
+      "stars_worse_pct": 8.125
+    },
+    "pairwise/core+aperture+pointing": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.0999495094668772,
+      "reduction_pct": 28.165862886971972,
+      "stars_worse_pct": 18.75
+    },
+    "global/core+aperture+pointing+background": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 0.9719415170289964,
+      "reduction_pct": 36.52564995101909,
+      "stars_worse_pct": 7.5
+    },
+    "pairwise/core+aperture+pointing+background": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.104682841777263,
+      "reduction_pct": 27.85674429629177,
+      "stars_worse_pct": 18.125
+    },
+    "global/all_safe": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 0.9527551827878535,
+      "reduction_pct": 37.778647250179354,
+      "stars_worse_pct": 8.75
+    },
+    "pairwise/all_safe": {
+      "n_stars": 160,
+      "raw_cv_pct": 1.5312350835872817,
+      "corrected_cv_pct": 1.0386560069982897,
+      "reduction_pct": 32.168742857890145,
+      "stars_worse_pct": 16.25
+    }
+  },
+  "paired_bootstrap": {
+    "global/core_vs_raw": {
+      "gain_pct": 37.22974150582823,
+      "ci95": [
+        30.142317237497238,
+        44.988349237510214
+      ]
+    },
+    "global/core+aperture_vs_core": {
+      "gain_pct": -0.3410147576578426,
+      "ci95": [
+        -5.103560340986859,
+        7.511964082831291
+      ]
+    },
+    "global/core+aperture+pointing_vs_core+aperture": {
+      "gain_pct": -0.08213215348729097,
+      "ci95": [
+        -8.11350044545025,
+        3.962818808691807
+      ]
+    },
+    "global/core+aperture+pointing+background_vs_core+aperture+pointing": {
+      "gain_pct": -0.6953249338457645,
+      "ci95": [
+        -5.159123061238235,
+        3.2966988927924823
+      ]
+    },
+    "global/all_safe_vs_core+aperture+pointing+background": {
+      "gain_pct": 1.9740214719699556,
+      "ci95": [
+        -4.041766908122711,
+        4.60815291995177
+      ]
+    },
+    "pairwise/core_vs_raw": {
+      "gain_pct": 29.2153708872083,
+      "ci95": [
+        23.115836126799078,
+        34.69454792113778
+      ]
+    },
+    "pairwise/core+aperture_vs_core": {
+      "gain_pct": -1.1549924344187446,
+      "ci95": [
+        -6.572727513432565,
+        4.998036443497943
+      ]
+    },
+    "pairwise/core+aperture+pointing_vs_core+aperture": {
+      "gain_pct": -0.3239438646849502,
+      "ci95": [
+        -8.84878317990878,
+        4.761497243677097
+      ]
+    },
+    "pairwise/core+aperture+pointing+background_vs_core+aperture+pointing": {
+      "gain_pct": -0.43032268932778894,
+      "ci95": [
+        -5.884179277259929,
+        7.954245343881792
+      ]
+    },
+    "pairwise/all_safe_vs_core+aperture+pointing+background": {
+      "gain_pct": 5.976994688606407,
+      "ci95": [
+        -1.561964400520699,
+        11.72598184311072
+      ]
+    }
+  },
+  "pairwise_histories": {
+    "core": {
+      "best_val_pair_mae": 0.016291551291942596,
+      "epochs": 73,
+      "train_pairs": 23095,
+      "val_pairs": 5053
+    },
+    "core+aperture": {
+      "best_val_pair_mae": 0.01674187369644642,
+      "epochs": 64,
+      "train_pairs": 23095,
+      "val_pairs": 5053
+    },
+    "core+aperture+pointing": {
+      "best_val_pair_mae": 0.016730058938264847,
+      "epochs": 59,
+      "train_pairs": 23095,
+      "val_pairs": 5053
+    },
+    "core+aperture+pointing+background": {
+      "best_val_pair_mae": 0.015951085835695267,
+      "epochs": 85,
+      "train_pairs": 23095,
+      "val_pairs": 5053
+    },
+    "all_safe": {
+      "best_val_pair_mae": 0.015986282378435135,
+      "epochs": 59,
+      "train_pairs": 23095,
+      "val_pairs": 5053
+    }
+  }
+}

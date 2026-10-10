@@ -31,6 +31,9 @@ USE_LOO  = "--loo" in sys.argv
 int_args = [int(s) for s in sys.argv[1:] if s.lstrip("-").isdigit()]
 S_MIN    = int_args[0] if len(int_args) >= 1 else None
 S_MAX    = int_args[1] if len(int_args) >= 2 else None
+# --vlim=0.05  fixes symmetric colour scale at ±5% around 1.0 (to match external images)
+_vlim_arg = next((s for s in sys.argv[1:] if s.startswith("--vlim=")), None)
+FIXED_VLIM = float(_vlim_arg.split("=")[1]) if _vlim_arg else None
 
 LABEL_COL  = "flux_offset"
 LABEL_NAME = "LOO flux_offset" if USE_LOO else "Gaia Rₚ flux_offset"
@@ -76,8 +79,13 @@ agg = agg[agg["n_sectors"] >= 3].copy()
 print(f"  {len(agg):,} stars with ≥ 3 sectors after averaging")
 
 # ── Color scale: centered on 1.0 ─────────────────────────────────────────────
-lo, hi = np.percentile(agg["offset"], [0.5, 99.5])
-extent = max(abs(lo - 1.0), abs(hi - 1.0), 0.005)
+if FIXED_VLIM is not None:
+    extent = FIXED_VLIM          # fixed scale to match external reference images
+    print(f"  Using fixed colour scale: 1.0 ± {extent:.3f}  (--vlim={extent})")
+else:
+    lo, hi = np.percentile(agg["offset"], [0.5, 99.5])
+    extent = max(abs(lo - 1.0), abs(hi - 1.0), 0.005)
+    print(f"  Auto colour scale: 1.0 ± {extent:.4f}  (data p0.5–p99.5; use --vlim=N to fix)")
 VMIN, VMAX = 1.0 - extent, 1.0 + extent
 CMAP = "RdBu_r"
 NORM = TwoSlopeNorm(vcenter=1.0, vmin=VMIN, vmax=VMAX)

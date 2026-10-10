@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "config": "baseline",
+      "val_cv_pct": 0.9301
+    },
+    {
+      "config": "+sector_group",
+      "val_cv_pct": 0.9253,
+      "delta_pp": -0.0048
+    },
+    {
+      "config": "+star_loo_std",
+      "val_cv_pct": 0.3271,
+      "delta_pp": -0.603
+    },
+    {
+      "config": "+group+star",
+      "val_cv_pct": 0.3168,
+      "delta_pp": -0.6133
+    }
+  ],
+  "best": {
+    "config": "+group+star",
+    "val_cv_pct": 0.3168,
+    "delta_pp": -0.6133
+  },
+  "elapsed_s": 16
+}

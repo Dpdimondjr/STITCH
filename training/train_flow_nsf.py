@@ -35,8 +35,17 @@ _parquet   = next((s for s in _sys.argv[1:] if s.endswith(".parquet")), "trainin
 _out_pt    = next((s for s in _sys.argv[1:] if s.endswith(".pt")),      "stitch_nsf.pt")
 _tmag_arg  = next((s for s in _sys.argv[1:] if s.startswith("--tmag=")), None)
 _target    = next((s.split("=")[1] for s in _sys.argv[1:] if s.startswith("--target=")), "flux_offset_loo")
+# --weight-mode=legacy   clips n_sectors to 20, divides by 20  (original)
+# --weight-mode=sharp    uses (n_sectors-1) directly, rewards well-observed stars more
+_weight_mode = next((s.split("=")[1] for s in _sys.argv[1:] if s.startswith("--weight-mode=")), "legacy")
+# --alpha=0.3  mixing weight for MAE loss alongside NLL (0=pure NLL, 1=pure MAE)
+_alpha     = float(next((s.split("=")[1] for s in _sys.argv[1:] if s.startswith("--alpha=")), "0.3"))
+# --n-mc=8     reparameterized MC samples per batch step for MAE gradient
+_n_mc      = int(next((s.split("=")[1] for s in _sys.argv[1:] if s.startswith("--n-mc=")), "8"))
 TMAG_MAX   = float(_tmag_arg.split("=")[1]) if _tmag_arg else 13.0
-print(f"Parquet: {_parquet}  →  {_out_pt}  (tmag <= {TMAG_MAX}, target={_target})")
+print(f"Parquet: {_parquet}  →  {_out_pt}  "
+      f"(tmag <= {TMAG_MAX}, target={_target}, weight-mode={_weight_mode}, "
+      f"alpha={_alpha}, n_mc={_n_mc})")
 
 df = pd.read_parquet(_parquet)
 print(f"Loaded {len(df):,} records from {df['tic_id'].nunique():,} stars")
@@ -52,9 +61,10 @@ df["log_sector_median"] = np.log1p(df["sector_median"].clip(lower=0))
 # per-star mean Gaia label: how much this star deviates from its Gaia RP
 # expected flux on average across sectors — an absolute calibration anchor.
 if "flux_offset" in df.columns and "gaiarp" in df.columns:
-    df["perstar_gaia_offset"] = df.groupby("tic_id")["flux_offset"].transform("mean")
+    # Placeholder — will be filled after split using training stars only to avoid leakage.
+    df["perstar_gaia_offset"] = np.nan
     GAIA_FEATURES = ["gaiarp", "perstar_gaia_offset"]
-    print("Gaia features: gaiarp + perstar_gaia_offset")
+    print("Gaia features: gaiarp + perstar_gaia_offset (leak-free, filled after split)")
 else:
     GAIA_FEATURES = []
     print("No Gaia features available")
@@ -85,35 +95,65 @@ df["sector_ccd_mean_loo"] = (_grp_sum - df[_target]) / (_grp_count - 1).clip(low
 _r = df["sector_ccd_mean_loo"].corr(df[_target])
 print(f"sector_ccd_mean_loo: std={df['sector_ccd_mean_loo'].std():.5f}  r={_r:.3f}")
 
-# Spatial KNN leave-one-out mean: mean LOO offset of the K nearest stars
-# by detector position within the same sector/cam/ccd. Captures sub-CCD gradients.
+# Spatial KNN features.
+# If the parquet already has robust features (v4+), use them directly.
+# Otherwise compute mean KNN on-the-fly (legacy behaviour for v3 and earlier).
 from scipy.spatial import cKDTree as _cKDTree
 _K = 20
-print(f"Computing spatial KNN mean LOO (k={_K}) …", flush=True)
 df = df.reset_index(drop=True)
-_knn_vals = np.full(len(df), np.nan, dtype=np.float32)
-for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
-    _n = len(_g)
-    if _n < 2:
-        continue
-    _coords = _g[["col", "row"]].values.astype(np.float32)
-    _vals   = _g[_target].values
-    _k      = min(_K, _n - 1)
-    _, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)  # col 0 = self
-    _knn_vals[_g.index.values] = _vals[_nn[:, 1:]].mean(axis=1)
-df["spatial_knn_mean_loo"] = _knn_vals
-# Fill any singleton-group NaNs with the CCD-level mean (safe fallback)
-df["spatial_knn_mean_loo"] = df["spatial_knn_mean_loo"].fillna(df["sector_ccd_mean_loo"])
-_r2 = df["spatial_knn_mean_loo"].corr(df[_target])
-_nan2 = df["spatial_knn_mean_loo"].isna().sum()
-print(f"spatial_knn_mean_loo: std={df['spatial_knn_mean_loo'].std():.5f}  r={_r2:.3f}  NaN={_nan2}")
 
-CONTINUOUS = CONTINUOUS + ["sector_ccd_mean_loo", "spatial_knn_mean_loo"]
+_HAS_ROBUST = ("spatial_knn_median_loo" in df.columns and
+               df["spatial_knn_median_loo"].notna().mean() > 0.8)
 
-# Upweight stars with more sectors — cleaner LOO denominators.
-df["sample_weight"] = (df["n_sectors_total"].clip(upper=20) / 20.0).astype(np.float32)
-print(f"  mean weight={df['sample_weight'].mean():.3f}  "
-      f"n>=5: {(df['n_sectors_total']>=5).mean()*100:.1f}%  "
+if _HAS_ROBUST:
+    print("Using pre-computed robust KNN features from parquet (v4+).")
+    # median_loo fills NaN with sector_ccd_mean_loo (also ~1.0, same scale — correct)
+    # mad_loo fills NaN with 0 — singletons have undefined spread, safest value is 0
+    # (filling MAD with sector_ccd_mean_loo ≈ 1.0 would corrupt the feature badly)
+    df["spatial_knn_median_loo"] = df["spatial_knn_median_loo"].fillna(df["sector_ccd_mean_loo"])
+    df["spatial_knn_mad_loo"]    = df["spatial_knn_mad_loo"].fillna(0.0)
+    _r_med = df["spatial_knn_median_loo"].corr(df[_target])
+    _r_mad = df["spatial_knn_mad_loo"].corr(df[_target])
+    print(f"  spatial_knn_median_loo: r={_r_med:.4f}  std={df['spatial_knn_median_loo'].std():.5f}")
+    print(f"  spatial_knn_mad_loo:    r={_r_mad:.4f}  std={df['spatial_knn_mad_loo'].std():.5f}")
+    # Also keep mean if present (for backward compat diagnostics), but don't train on it
+    if "spatial_knn_mean_loo" not in df.columns:
+        df["spatial_knn_mean_loo"] = df["spatial_knn_median_loo"]
+    SPATIAL_FEATURES = ["sector_ccd_mean_loo", "spatial_knn_median_loo", "spatial_knn_mad_loo"]
+else:
+    # Legacy: compute mean KNN on-the-fly (v3 and earlier parquets)
+    print(f"Computing spatial KNN mean LOO (k={_K}) …", flush=True)
+    _knn_vals = np.full(len(df), np.nan, dtype=np.float32)
+    for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
+        _n = len(_g)
+        if _n < 2:
+            continue
+        _coords = _g[["col", "row"]].values.astype(np.float32)
+        _vals   = _g[_target].values
+        _k      = min(_K, _n - 1)
+        _, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)
+        _knn_vals[_g.index.values] = _vals[_nn[:, 1:]].mean(axis=1)
+    df["spatial_knn_mean_loo"] = _knn_vals
+    df["spatial_knn_mean_loo"] = df["spatial_knn_mean_loo"].fillna(df["sector_ccd_mean_loo"])
+    _r2 = df["spatial_knn_mean_loo"].corr(df[_target])
+    print(f"spatial_knn_mean_loo: std={df['spatial_knn_mean_loo'].std():.5f}  r={_r2:.3f}")
+    SPATIAL_FEATURES = ["sector_ccd_mean_loo", "spatial_knn_mean_loo"]
+
+CONTINUOUS = CONTINUOUS + SPATIAL_FEATURES
+print(f"Spatial features: {SPATIAL_FEATURES}")
+
+# Sample weighting — rewards well-observed stars with cleaner LOO labels.
+# legacy: clip(n,20)/20    — original behaviour
+# sharp:  (n-1)/max(n-1)  — proportional to label variance reduction
+if _weight_mode == "sharp":
+    _n_obs = df["n_sectors_total"].clip(lower=2)
+    _raw_w = (_n_obs - 1).astype(np.float32)
+    df["sample_weight"] = (_raw_w / _raw_w.max()).astype(np.float32)
+    print(f"Weight mode: sharp (∝ N−1)  mean={df['sample_weight'].mean():.3f}")
+else:
+    df["sample_weight"] = (df["n_sectors_total"].clip(upper=20) / 20.0).astype(np.float32)
+    print(f"Weight mode: legacy (clip(N,20)/20)  mean={df['sample_weight'].mean():.3f}")
+print(f"  n>=5: {(df['n_sectors_total']>=5).mean()*100:.1f}%  "
       f"n>=8: {(df['n_sectors_total']>=8).mean()*100:.1f}%")
 
 # ── 4. Stratified star-level train/val/test split ─────────────────────────────
@@ -134,9 +174,18 @@ val_tics, test_tics = train_test_split(
     temp_tics, test_size=0.5, stratify=temp_cam.values, random_state=42,
 )
 
-train_df = df[df["tic_id"].isin(train_tics)]
-val_df   = df[df["tic_id"].isin(val_tics)]
-test_df  = df[df["tic_id"].isin(test_tics)]
+train_df = df[df["tic_id"].isin(train_tics)].copy()
+val_df   = df[df["tic_id"].isin(val_tics)].copy()
+test_df  = df[df["tic_id"].isin(test_tics)].copy()
+
+# Fill perstar_gaia_offset from training stars only (no leakage into val/test).
+if "perstar_gaia_offset" in GAIA_FEATURES:
+    _train_per = train_df.groupby("tic_id")["flux_offset"].mean()
+    _global    = float(_train_per.mean())
+    for _sdf in [train_df, val_df, test_df]:
+        _sdf["perstar_gaia_offset"] = _sdf["tic_id"].map(_train_per).fillna(_global).values
+    _r_anchor = train_df["perstar_gaia_offset"].corr(train_df[_target])
+    print(f"perstar_gaia_offset: global_mean={_global:.5f}  r(train)={_r_anchor:.3f}")
 
 print(f"\nSplit (by star, stratified by cam):")
 print(f"  Train: {len(train_df):5,} records, {train_df['tic_id'].nunique()} stars")
@@ -228,16 +277,30 @@ best_val_nll  = float("inf")
 best_state    = None
 patience_count = 0
 
-print("\nTraining NSF...\n  epoch  train_nll   val_nll    lr")
+_obj_label = f"NLL + {_alpha}*MAE(mc={_n_mc})" if _alpha > 0 else "NLL only"
+print(f"\nTraining NSF  [{_obj_label}]...\n  epoch  train_nll  train_mae   val_nll    lr")
 for epoch in range(1, MAX_EPOCHS + 1):
     flow.train()
-    train_nlls = []
+    train_nlls, train_maes = [], []
     for cb, yb, wb in train_loader:
         cb, yb, wb = cb.to(device), yb.to(device), wb.to(device)
-        log_probs = flow(cb).log_prob(yb)           # (batch,)
-        nll = -(log_probs * wb).sum() / wb.sum()    # weighted mean NLL
+        dist = flow(cb)
+        log_probs = dist.log_prob(yb)                       # (batch,)
+        nll = -(log_probs * wb).sum() / wb.sum()
+
+        if _alpha > 0 and _n_mc > 0:
+            # Reparameterized samples → gradient flows through conditional mean.
+            samples_r = dist.rsample((_n_mc,)).squeeze(-1)  # (n_mc, batch)
+            cond_mean = samples_r.mean(0)                    # (batch,)
+            mae = (cond_mean - yb.squeeze(-1)).abs()
+            mae_loss = (mae * wb).sum() / wb.sum()
+            loss = nll + _alpha * mae_loss
+            train_maes.append(mae_loss.item())
+        else:
+            loss = nll
+
         opt.zero_grad()
-        nll.backward()
+        loss.backward()
         torch.nn.utils.clip_grad_norm_(flow.parameters(), 5.0)
         opt.step()
         train_nlls.append(nll.item())
@@ -248,10 +311,11 @@ for epoch in range(1, MAX_EPOCHS + 1):
 
     sched.step(val_nll)
     train_nll = np.mean(train_nlls)
+    train_mae = np.mean(train_maes) if train_maes else float("nan")
 
     if epoch % 10 == 0:
         lr_now = opt.param_groups[0]["lr"]
-        print(f"  {epoch:5d}  {train_nll:.4f}      {val_nll:.4f}    {lr_now:.2e}")
+        print(f"  {epoch:5d}  {train_nll:.4f}     {train_mae:.4f}   {val_nll:.4f}    {lr_now:.2e}")
 
     if val_nll < best_val_nll:
         best_val_nll  = val_nll
@@ -270,9 +334,10 @@ print(f"\nBest val NLL: {best_val_nll:.4f}")
 
 flow.eval()
 with torch.no_grad():
-    # Point estimate: use mean of the learned distribution (via samples)
-    samples = flow(C_test_t).sample((200,)).squeeze(-1)  # (200, N_test)
-    mu_test = samples.mean(0).cpu().numpy()               # (N_test,)
+    # Point estimate: conditional median via MC samples (matches MAE training objective).
+    # For NLL-only training, median is more robust than mean for skewed distributions.
+    samples = flow(C_test_t).sample((500,)).squeeze(-1)   # (500, N_test)
+    mu_test = samples.median(0).values.cpu().numpy()      # (N_test,)
 
 # Convert back to flux_offset units
 y_test_fo  = y_test  * y_std + y_mean   # already numpy (built from pandas)
@@ -306,6 +371,7 @@ for cam, cam_df in test_df_reset.groupby("cam"):
 
 # ── 9. Save ───────────────────────────────────────────────────────────────────
 
+import time as _time
 torch.save({
     "model_state":      best_state,
     "means":            means,
@@ -321,6 +387,20 @@ torch.save({
         "transforms":      TRANSFORMS,
         "hidden_features": HIDDEN,
         "bins":            BINS,
+    },
+    "training_provenance": {
+        "parquet":         _parquet,
+        "target":          _target,
+        "weight_mode":     _weight_mode,
+        "spatial_features": SPATIAL_FEATURES,
+        "has_robust_knn":  _HAS_ROBUST,
+        "tmag_max":        TMAG_MAX,
+        "alpha":           _alpha,
+        "n_mc":            _n_mc,
+        "point_estimate":  "conditional_median",
+        "n_train_stars":   int(train_df["tic_id"].nunique()),
+        "n_test_stars":    int(test_df["tic_id"].nunique()),
+        "date":            _time.strftime("%Y-%m-%d"),
     },
 }, _out_pt)
 print(f"\nSaved → {_out_pt}")

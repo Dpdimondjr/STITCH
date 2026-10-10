@@ -87,6 +87,9 @@ _K = 20
 print(f"Computing spatial KNN mean LOO (k={_K}) …", flush=True)
 df = df.reset_index(drop=True)
 _knn_vals = np.full(len(df), np.nan, dtype=np.float32)
+_knn_mad = np.full(len(df), np.nan, dtype=np.float32)
+_knn_radius = np.full(len(df), np.nan, dtype=np.float32)
+_knn_count = np.zeros(len(df), dtype=np.float32)
 for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
     _n = len(_g)
     if _n < 2:
@@ -94,10 +97,18 @@ for (_sec, _cam, _ccd), _g in df.groupby(["sector", "cam", "ccd"]):
     _coords = _g[["col", "row"]].values.astype(np.float32)
     _vals   = _g[_target].values
     _k      = min(_K, _n - 1)
-    _, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)
-    _knn_vals[_g.index.values] = _vals[_nn[:, 1:]].mean(axis=1)
+    _dist, _nn  = _cKDTree(_coords).query(_coords, k=_k + 1)
+    _x = _vals[_nn[:, 1:]]
+    _med = np.median(_x, axis=1)
+    _knn_vals[_g.index.values] = _x.mean(axis=1)
+    _knn_mad[_g.index.values] = np.median(np.abs(_x-_med[:,None]), axis=1)
+    _knn_radius[_g.index.values] = _dist[:, -1]
+    _knn_count[_g.index.values] = _k
 df["spatial_knn_mean_loo"] = _knn_vals
 df["spatial_knn_mean_loo"] = df["spatial_knn_mean_loo"].fillna(df["sector_ccd_mean_loo"])
+df["spatial_knn_mad_loo"] = pd.Series(_knn_mad).fillna(df["spatial_knn_mad_loo"] if "spatial_knn_mad_loo" in df else 0.0).to_numpy()
+df["spatial_knn_radius_loo"] = pd.Series(_knn_radius).fillna(0.0).to_numpy()
+df["spatial_knn_count_loo"] = _knn_count
 _r2 = df["spatial_knn_mean_loo"].corr(df[_target])
 print(f"spatial_knn_mean_loo: std={df['spatial_knn_mean_loo'].std():.5f}  r={_r2:.3f}")
 
@@ -163,6 +174,7 @@ print(f"loo_prev:   std={df['loo_prev'].std():.5f}  r={_r4:.3f}")
 print(f"sector_gap: mean={df['sector_gap'].mean():.1f}  gap<=3: {_cov*100:.1f}% of rows")
 
 CONTINUOUS = CONTINUOUS + ["sector_ccd_mean_loo", "spatial_knn_mean_loo",
+                            "spatial_knn_mad_loo", "spatial_knn_radius_loo", "spatial_knn_count_loo",
                             "spatial_poly_pred", "loo_prev", "sector_gap", "n_sectors_total"]
 
 # Weight by inverse oracle ceiling: quiet stars with many sectors dominate the loss.
