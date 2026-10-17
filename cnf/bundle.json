@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "cnf",
+  "target": "historical_relative",
+  "archived_selection_sha256": "fbf6830efb9383f4759eb8f37ffc2a4782e03fc9c5238f3723ae7595043a4333",
+  "archived_results_sha256": "99bbd14e6af8796420fb4238bc903ff3d080cbcda40866845a0841bf2941ffbf",
+  "sha256": {
+    "cohort_manifest.parquet": "a1ca1bf705ae3954cff15a0db08aa2ee1213f8b941e39288475b06f8b7a07c5b",
+    "environment.json": "cd8fd3ff1680a1ad8cfe0bf3ea7e8b4a2f3122c46c682a6602caf0f528f7e865",
+    "identity_catalog.parquet": "2df57a66911de487abb8d8d254d6d207b4e2782a1861c890720b7db22aaaf324",
+    "model.json": "d53f50e054237f88afb2fc8d6ac034263f1c6d2e56128d007fc14d722f057f24",
+    "model.pt": "30911c27379148ea6512101704ed9fc16b632ec020a7c2ae034e776fdf564771",
+    "reference_bank.parquet": "e1f21987ef503b6d51654286171e3eb55ebefd3cfe4e05861705485fc839ffcb",
+    "thermal.parquet": "9341a55dc54e7519d26a3f2f281b5bf4625e08e7a0f5793ebf444a8f591b89d8"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "numpy": "1.26.4",
+  "pandas": "2.3.3",
+  "scikit-learn": "1.6.1",
+  "joblib": "1.5.3",
+  "torch": "2.8.0",
+  "zuko": "1.5.0",
+  "astropy": "6.0.1",
+  "pyarrow": "21.0.0"
+}

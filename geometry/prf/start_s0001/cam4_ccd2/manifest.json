@@ -1,0 +1,127 @@
+[
+  {
+    "file": "tess2018243163601-prf-4-2-row0001-col0045.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0001-col0045.fits",
+    "sha256": "164363cfa5164c7f986c16f08e350d5ea0266cdb84cac9ae18d4b9b15c530061"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0001-col0557.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0001-col0557.fits",
+    "sha256": "25e2eda9316c0f63f2ca4905c052ba92c51d0797ca19279d592a2a25c66bb168"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0001-col1069.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0001-col1069.fits",
+    "sha256": "aa849956fe0d226b3d6f65120401e729675019126f06d1b961df982cf6a96c88"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0001-col1580.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0001-col1580.fits",
+    "sha256": "6f61efe0433ee14431c22a5f164b05b01f35f9a5b7d2ef1bfca0a7bcc3270009"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0001-col2092.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0001-col2092.fits",
+    "sha256": "0e9f33c7586fa75c614005cb4b4bb275359d9713f3acccd96ea4c1644782f937"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0513-col0045.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0513-col0045.fits",
+    "sha256": "b09f82dc27c27446cc88662b42e7a6a86dfeba5bee34f6e2c9bf7cb214a95744"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0513-col0557.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0513-col0557.fits",
+    "sha256": "20f68c89a7b7d7c5fe4377787cd6156c19304ccebd448bce6628d634049ad40f"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0513-col1069.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0513-col1069.fits",
+    "sha256": "05d404db2a56edb64c28036bf83eddfbfd811b2772570ffbe919f185caf17125"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0513-col1580.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0513-col1580.fits",
+    "sha256": "22fa336b9732578186c9d154805cb8d8c0151727d6ffb6250e317e5b37cb1f35"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row0513-col2092.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row0513-col2092.fits",
+    "sha256": "dd9064cdaed82cc71c05746792cb2a6ed5f98f1bc6ae64d41609665398907784"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1025-col0045.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1025-col0045.fits",
+    "sha256": "5748a78eb930f2f50ab038e1d5bba4e495f2a59aa481525be9cae7e80c7a0b76"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1025-col0557.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1025-col0557.fits",
+    "sha256": "3c7c104b9d14384ffd2698e7612e05ee914bb84b408b6bebf1822dd1e6dc8316"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1025-col1069.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1025-col1069.fits",
+    "sha256": "53d8729d19d6c7520d33f6927f427ef50ac0f0ae8856de833c9336db9954fffc"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1025-col1580.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1025-col1580.fits",
+    "sha256": "f59878ea06f5501e5737662a5073eb4b003c46b48e2c09d73da775e2df0a359e"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1025-col2092.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1025-col2092.fits",
+    "sha256": "de77d37bb0b8c131736b0cf4e1e3ed3ab35ff61d847246747a1adeb98d7ae0d7"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1536-col0045.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1536-col0045.fits",
+    "sha256": "776d275efefcaadc53772ff378fba6749dd368993384d793d1c1ae05338ed55c"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1536-col0557.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1536-col0557.fits",
+    "sha256": "c41eaf2d11b67cbaf99766fe2b61ad7be5d3283e453248ebdcc506d3b50b9ebe"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1536-col1069.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1536-col1069.fits",
+    "sha256": "f9939b1f2f1605a01f4b94b5ef9a37b7b5e67583249474e694a8a4715c3072e1"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1536-col1580.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1536-col1580.fits",
+    "sha256": "5ddd7c5f753b733d8510bee0b50693473c20e236ef6028c8a5c850511a31b99d"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row1536-col2092.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row1536-col2092.fits",
+    "sha256": "a5766fdd0e26480ef771dacf632f1c9c12715ef1f4e82dfb134cd7e94895d6e9"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row2048-col0045.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row2048-col0045.fits",
+    "sha256": "f0ce59e36ef57729f6b0ed1f5fe25baca2bf4a9ebdf06c13667bc2b88a17a56e"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row2048-col0557.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row2048-col0557.fits",
+    "sha256": "1773441542efab4fb40aaa3ca3a22ece28f4e6cc1ec67f0a784ff227f987fd81"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row2048-col1069.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row2048-col1069.fits",
+    "sha256": "e2414c6ef6f96fe96e06c80bc839c69538949d380ac698374a2bec30aaca72a2"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row2048-col1580.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row2048-col1580.fits",
+    "sha256": "9a575afbd4e3af3b95f1abe9241bd6eed72c3455264d7f508bbd3101d84e0992"
+  },
+  {
+    "file": "tess2018243163601-prf-4-2-row2048-col2092.fits",
+    "url": "https://archive.stsci.edu/missions/tess/models/prf_fitsfiles/start_s0001/cam4_ccd2/tess2018243163601-prf-4-2-row2048-col2092.fits",
+    "sha256": "4b6417f2176ca8c76a9476de96ea5f7da835af22746074c8e4398b26b37b9155"
+  }
+]

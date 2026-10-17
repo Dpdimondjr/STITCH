@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "kind": "hgb",
+  "target": "gaia_rp",
+  "release_designation": "Frozen physical research model; historical default_model_promoted=false retained",
+  "original_model_manifest_sha256": "8bce6c531cc631cdbc56b163981f2c9b974482a0c0ca6e387314e8d45288ad29",
+  "sha256": {
+    "cohort_manifest.parquet": "a1ca1bf705ae3954cff15a0db08aa2ee1213f8b941e39288475b06f8b7a07c5b",
+    "color_fold_0.pkl": "d31ae0737011db667bdab223588495412ca4df3bb92a8bfd53e6f1dac9c0495c",
+    "color_fold_1.pkl": "4ec889208fc7edd0737d990dd79627578d0d65f7f70de5e860d6b2996096745e",
+    "color_fold_2.pkl": "78f3d80c8419583fcaad0ab42a78da871ac23090169f702cafaf97861bb3de8b",
+    "color_fold_3.pkl": "adb60e1a9ec8c4b5ab6818d88fcccb915646f2b3e525d72dccf04981812afb91",
+    "color_fold_4.pkl": "62ca1904fa58b9be3822c7cfec0fc93ca8abbebe49c0e7b981cfe4c9c7f2c3d4",
+    "environment.json": "cd8fd3ff1680a1ad8cfe0bf3ea7e8b4a2f3122c46c682a6602caf0f528f7e865",
+    "identity_catalog.parquet": "2df57a66911de487abb8d8d254d6d207b4e2782a1861c890720b7db22aaaf324",
+    "physical/imputation.pkl": "0591d59a85df3371c620b684686260884341145c9c07fa8cbe46d79987cabb89",
+    "physical/round_0.pkl": "06c40dca7b745757ba3c363bf9e9ee5a7cbbd40ce448e59766904681309dd699",
+    "physical/round_1.pkl": "585072098c599d095fda19043e8680e0c05e0e489b2a43ec973a8416af193e67",
+    "physical/round_2.pkl": "b2f0ffd211673d503dce64d73785782ff463319f29edcb34e4ba8ed2bd2a7854",
+    "physical/round_3.pkl": "02c6c69699d2d93941b0cc7f949247477eb04649908e2c596a74f1e2eb5202d4",
+    "physical/round_4.pkl": "f39766e41bf903fedbdd9ff811dd1d8ceb5d275b5bda8b8b56eefc040845a5a2",
+    "reference_bank.parquet": "eab87f3f8429a188f9111ce8b35c8b05bd48165dfd8d6937c51e5c1f67c6468f",
+    "selected_model.json": "8bce6c531cc631cdbc56b163981f2c9b974482a0c0ca6e387314e8d45288ad29",
+    "support.json": "c47117772accbf0fc5e8a1b5f04c0a029fb469a5314624168ab631e394c4720e",
+    "thermal.parquet": "9341a55dc54e7519d26a3f2f281b5bf4625e08e7a0f5793ebf444a8f591b89d8"
+  }
+}

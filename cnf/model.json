@@ -1,0 +1,14 @@
+{
+  "target": "historical_relative",
+  "beta": 0.9500000000000002,
+  "clip": [
+    0.85,
+    1.15
+  ],
+  "estimator": "exact conditional median",
+  "historical_checkpoint": true,
+  "selection": "Selected among four auditable archived flows on eight calibration stars; not a global-best or Gaia-RP-trained claim",
+  "checkpoint_sha256": "30911c27379148ea6512101704ed9fc16b632ec020a7c2ae034e776fdf564771",
+  "application_reference": "Verified training-only bank intersected with archived pairwise training membership; held-out source groups excluded",
+  "training_reference_limit": "Application reference repair cannot repair historical training preprocessing."
+}
