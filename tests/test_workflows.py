@@ -66,3 +66,30 @@ def test_cnf_gaia_training(inputs):
     assert json.loads((a/'cnf_model/model.json').read_text())['target']=='gaia_rp'
     result=CNFModel(a/'cnf_model').predict(f[f.role.ne('train')])
     assert np.isfinite(result).all() and (result>0).all()
+
+
+def test_matched_cnf_uses_hgb_prior_and_source_exclusions(inputs):
+    import shutil
+    torch=pytest.importorskip('torch');zuko=pytest.importorskip('zuko');torch.set_num_threads(1)
+    from stitch.cnf.model import CNFModel
+    from stitch.bundles import seal_bundle
+    a=inputs;prepared=a/'physical_prepared'
+    f=prepare(a/'metadata.parquet',a/'labels.parquet',a/'splits.parquet',prepared,'hgb')
+    root=a/'matched_cnf';root.mkdir()
+    for name in ['reference_bank.parquet','cohort_manifest.parquet',*[f'color_fold_{i}.pkl' for i in range(5)]]:
+        shutil.copy2(prepared/name,root/name)
+    config=dict(features=1,context=len(FEATURES),transforms=1,hidden_features=[8],bins=4)
+    flow=zuko.flows.NSF(**config)
+    for parameter in flow.parameters():torch.nn.init.zeros_(parameter)
+    zeros=pd.Series(0.,index=FEATURES);ones=pd.Series(1.,index=FEATURES)
+    torch.save(dict(state=flow.state_dict(),config=config,feature_cols=FEATURES,
+        medians=zeros,means=zeros,stds=ones,y_median=0.,y_std=1.),root/'model.pt')
+    (root/'model.json').write_text(json.dumps(dict(target='gaia_rp',reference_family='hgb',beta=1.,clip=None)))
+    seal_bundle(root,dict(kind='cnf'))
+    model=CNFModel(root)
+    q=f.iloc[:2].copy();q['pred_knn']=[1.,2.];q['knn20_median']=3.
+    result=model.predict(q)
+    np.testing.assert_allclose(result[1]/result[0],2.,rtol=1e-7)
+    q['pred_knn']=0.
+    with pytest.raises(ValueError,match='reference correction'):model.predict(q)
+    with pytest.raises(ValueError,match='historical cohort'):model.attach_references(f[f.tic_id.eq(f.tic_id.iloc[0])])

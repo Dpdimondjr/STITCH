@@ -32,7 +32,7 @@ def fetch(url,path,expected):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--bundle',choices=['hgb','cnf','geometry'],action='append',required=True);p.add_argument('--out',type=Path,default=Path('artifacts'));p.add_argument('--manifest',type=Path,default=Path(__file__).resolve().parents[1]/'models/manifest.json');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--bundle',choices=['hgb','cnf','cnf_gaia','geometry'],action='append',required=True);p.add_argument('--out',type=Path,default=Path('artifacts'));p.add_argument('--manifest',type=Path,default=Path(__file__).resolve().parents[1]/'models/manifest.json');a=p.parse_args()
     manifest=json.loads(a.manifest.read_text());a.out.mkdir(parents=True,exist_ok=True)
     root_url=f"https://raw.githubusercontent.com/{manifest['repository']}/{manifest['asset_commit']}"
     for name in dict.fromkeys(a.bundle):

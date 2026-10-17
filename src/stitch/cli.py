@@ -60,13 +60,13 @@ def predict(args):
             frames.append(model.attach_references(g,int(tic)) if args.command=='predict-hgb' else model.attach_references(g))
         f=pd.concat(frames,ignore_index=True)
     f['correction']=model.predict(f)
-    if args.command=='predict-cnf':f['pred_knn']=f.knn20_median
+    if args.command=='predict-cnf':f['pred_knn']=f[model.prior_column]
     if 'has_gaia_anchor' not in f:f['has_gaia_anchor']=np.isfinite(f.gaiarp)&np.isfinite(f.bp_rp)
     if 'systematic_score' not in f:f['systematic_score']=np.nan
     f['qualified']=f.systematic_score.gt(.95);f['missing_anchor_fallback']=~f.has_gaia_anchor
     columns=model.features if args.command=='predict-hgb' else model.c['feature_cols']
     f['imputed_feature_count']=(~np.isfinite(f[columns].to_numpy(float))).sum(axis=1)
-    count='ref_count' if args.command=='predict-hgb' else 'reference_count'
+    count='ref_count' if args.command=='predict-hgb' else model.reference_count_column
     f['reference_supported']=f[count].fillna(0).gt(0)
     if 'product_family' not in f:f['product_family']='unknown'
     f['experimental_product_transfer']=f.product_family.ne('tess-spoc')

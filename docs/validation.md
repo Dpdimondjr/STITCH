@@ -1,5 +1,14 @@
 # Release validation
 
+The matched Gaia CNF update was checked on October 17, 2026:
+
+* All 159,654 archived calibration/confirmation/development-test predictions replay exactly through the published adapter.
+* Four new-source sectors reproduce HGB's reference and color construction exactly; prepared and new-source CLI paths agree.
+* The older CNF still reproduces its 38 archived calibration predictions to absolute tolerance `1e-12`.
+* Six automated tests pass, including a check that the matched model uses the HGB prior and rejects historical-cohort sources on the new-source path.
+* An installed 0.1.1 wheel matches every runtime source file and runs matched CNF inference outside the repository. Dashboard generation with the new corrections passes.
+* No light curves were downloaded. These checks do not validate long-baseline signal preservation.
+
 The core extraction was checked against the preserved research implementation on October 16, 2026.
 
 * Frozen HGB predictions replay exactly on 2,646 archived rows.

@@ -1,28 +1,37 @@
 {
   "schema_version": 1,
   "repository": "Dpdimondjr/STITCH",
-  "asset_commit": "295ff1e5ff0b53a29430c1fed9a28b8bfb95889e",
-  "asset_tag": "models-20261016-v1",
+  "asset_commit": "75868958859089ebfc997e5fc997f88303856689",
+  "asset_tag": "models-20261017-v1",
   "bundles": {
     "hgb": {
       "manifest_sha256": "f6d9e9efad28fb46150fb2a1426faaf0de750db54c3414b1e825d35d3205b2ae",
       "bytes": 162478125,
-      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/295ff1e5ff0b53a29430c1fed9a28b8bfb95889e/hgb/bundle.json"
+      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/75868958859089ebfc997e5fc997f88303856689/hgb/bundle.json"
     },
     "cnf": {
       "manifest_sha256": "3c001895c431ff9575c801947d58f1f6cedc41fc24fb2235928f555454fa8a70",
       "bytes": 18061090,
-      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/295ff1e5ff0b53a29430c1fed9a28b8bfb95889e/cnf/bundle.json"
+      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/75868958859089ebfc997e5fc997f88303856689/cnf/bundle.json"
     },
     "geometry": {
       "manifest_sha256": "42a4d94184d027c9a65b2aa47804a7a02401c31bda88c96fe6ef641e5711dd97",
       "bytes": 178909376,
-      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/295ff1e5ff0b53a29430c1fed9a28b8bfb95889e/geometry/bundle.json"
+      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/75868958859089ebfc997e5fc997f88303856689/geometry/bundle.json"
+    },
+    "cnf_gaia": {
+      "manifest_sha256": "63754a5fd0fd518f58f2efcd22b3d40b7f83bcedfa442d5bbed48cd354b25636",
+      "bytes": 18513166,
+      "manifest_url": "https://raw.githubusercontent.com/Dpdimondjr/STITCH/75868958859089ebfc997e5fc997f88303856689/cnf_gaia/bundle.json"
     }
   },
   "provenance_sha256": {
     "models/provenance/hgb_freeze.json": "a5a40614cc023dc20ccb7fd8d681ba840dabc9ad49fc420de9d0373389cd7fca",
     "models/provenance/cnf_selection.json": "fbf6830efb9383f4759eb8f37ffc2a4782e03fc9c5238f3723ae7595043a4333",
-    "models/provenance/cnf_reference_audit.csv": "383394be2a91263fab0d20a00c16e40a6168242337b577aca15ac4d05cb9c25f"
+    "models/provenance/cnf_reference_audit.csv": "383394be2a91263fab0d20a00c16e40a6168242337b577aca15ac4d05cb9c25f",
+    "models/provenance/cnf_gaia_metrics.csv": "3bddbe69e4a2584bc1fb106710be9e02e026b10bf5b81994de7ab306a8d0cd2c",
+    "models/provenance/cnf_gaia_paired_comparisons.csv": "a2970186cb7a7ce648ae5f87460185b1b37088b4c20445e44fdfb214845f221f",
+    "models/provenance/cnf_gaia_selection.json": "a175efa31f13af7187b202574edf1e43363e7340293f3b5048a1448f0781c8da",
+    "models/provenance/cnf_gaia_research_verification.json": "0fab26185dcc5b16f78f5b34a13421704b009dea73d2688f2aa456ac1eb4fb0c"
   }
 }

@@ -5,12 +5,13 @@ The release provides reproducible research workflows and verified frozen models.
 | Model | Target and application |
 | --- | --- |
 | Frozen physical HGB | Gaia RP with a training-only color/passband transfer; five rounds, 120 predictors, source-group-safe reference banks and retained external anchor. Trained on 457,123 qualified sectors from 36,507 stars. The original `default_model_promoted: false` remains in its manifest. |
+| Matched Gaia CNF (`cnf_gaia`) | Same 457,123 training rows, 120 inputs, Gaia target and reference construction as physical HGB. Conditional-median NSF; epoch 16 selected from 28 completed epochs using qualified calibration CV only. Slightly worse quiet-star scatter; long-baseline recovery untested. Beta 1, no clipping. Not automatically promoted. |
 | Frozen pairwise CNF | Historical relative-target NSF; exact conditional median, saved beta 0.95 and clipping. Selected among four archived candidates using eight calibration stars. Application references were repaired and intersected with its historical training membership. This does not repair historical training preprocessing or make it a global best model. |
 | New training commands | HGB and CNF default to Gaia RP. New fits create new directories and are never automatically promoted. Relative CNF targets require an explicit option. |
 
 Lower scatter in quiet-star sector medians does not by itself show that true stellar variability is preserved. Inputs related to crowding, extraction, PDC or flux-weighted centroids can respond to stellar signals. The models do not explicitly force sector fluxes to match, but a learned correction can still alter genuine variability.
 
-The frozen HGB uses metadata summaries across all supplied visits. The effect of limiting this history to nearby sectors or downweighting distant visits is being tested separately. Those temporal-context models are not part of this frozen release. No behavior during an unobserved gap is reconstructed.
+The frozen HGB and matched Gaia CNF use metadata summaries across all supplied visits. Separate HGB retrains limiting or downweighting distant visits reduced history sensitivity with a small calibration cost and mixed conditional signal results. Those temporal-context models are not part of this release. No behavior during an unobserved gap is reconstructed.
 
 The repeatedly examined test stars are a development benchmark. Report all retained sectors and individually TARS-qualified sectors separately, including lost rows and missing anchors. A selected quiet TIC does not make every collected sector quiet or individually qualified. A missing score is unknown, not a passing score.
 

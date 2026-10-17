@@ -21,12 +21,12 @@ stitch dashboard --predictions runs/demo/prediction/predictions.parquet \
 ## Download frozen assets
 
 ```bash
-python tools/download_models.py --bundle hgb --bundle cnf --bundle geometry --out artifacts
+python tools/download_models.py --bundle hgb --bundle cnf_gaia --bundle geometry --out artifacts
 stitch verify-model artifacts/hgb
-stitch verify-model artifacts/cnf
+stitch verify-model artifacts/cnf_gaia
 ```
 
-The [manifest](../models/manifest.json) pins an immutable Git commit and bundle checksums. Downloads are limited to two at a time; existing verified assets are reused. Model assets occupy approximately 343 MiB, including the PRF calibration grids. These are separate from light-curve data. The downloader retains a 4 GiB free-disk reserve.
+The [manifest](../models/manifest.json) pins an immutable Git commit and bundle checksums. Downloads are limited to two at a time; existing verified assets are reused. The manifest records each bundle's size, including the PRF calibration grids. These are separate from light-curve data. The downloader retains a 4 GiB free-disk reserve. The older relative-target CNF remains available with `--bundle cnf`.
 
 ## 1. Collect light curves
 
@@ -82,13 +82,17 @@ The output contains `predictions.parquet`, optional corrected `curves.parquet`, 
 ## 3. Frozen CNF inference
 
 ```bash
-stitch predict-cnf --model artifacts/cnf --features runs/physical.parquet \
+stitch predict-cnf --model artifacts/cnf_gaia --features runs/physical.parquet \
   --catalog-dir catalogs --curves runs/curves.parquet --out runs/cnf
 ```
 
-The supplied CNF is the historical pairwise NSF, with its exact conditional-median estimator, saved target scaling, beta and `[0.85, 1.15]` clipping. Its application reference bank is separate from HGB's. It was selected among four archived candidates on eight calibration stars and is not a newly trained Gaia-RP model.
+`cnf_gaia` is the new matched Gaia-RP model with 120 physical HGB inputs. It uses HGB's reference construction and `pred_knn` prior, its saved training-only scaling, and the exact conditional median with beta 1 and no clipping. New-source identity checks, reference-fold exclusion and color transfer follow HGB. Use `--prepared` only for correctly prepared HGB physical features, including `pred_knn`; do not substitute the compact CNF reference features. See [results and limits](matched_cnf.md).
+
+The separate `cnf` bundle is the historical pairwise NSF, with its saved scaling, beta and `[0.85, 1.15]` clipping. It uses its own `knn20_median` reference bank. The loader distinguishes these families using the bundle metadata; old commands remain supported.
 
 ## Train new models
+
+The existing `train-cnf` command trains the compact 20-input family; it does not reproduce the new 120-input matched research fit. The released matched checkpoint, training protocol, selection record and inference implementation are provided for reproducible application and comparison.
 
 Training requires three matched Parquet tables with unique `source_row`, `tic_id`, `sector` keys:
 

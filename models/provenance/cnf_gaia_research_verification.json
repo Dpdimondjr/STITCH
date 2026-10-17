@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "preprocessing_and_original_target": {
+    "training": {
+      "sample_rows": 512,
+      "all_120_scaled_inputs_exact": true,
+      "original_hgb_target_exact": true
+    },
+    "calibration": {
+      "sample_rows": 512,
+      "all_120_scaled_inputs_exact": true,
+      "original_hgb_target_exact": true
+    }
+  },
+  "prediction_replay_rows": 512,
+  "independently_verified_metric_groups": 18,
+  "no_additional_model_selection": true,
+  "script_sha256": "a9ae13a914b518a3e37310fe3f4e35693c416a73f02d7dd6a14fd2538e1028df"
+}

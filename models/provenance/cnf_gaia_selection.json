@@ -1,0 +1,19 @@
+{
+  "selected": "best_cv.pt",
+  "epoch": 16,
+  "metrics": {
+    "epoch": 16,
+    "training_nll": 0.5304300131658022,
+    "calibration_nll": 0.6767116429576701,
+    "calibration_qualified_cv_pct": 0.6152796506554051,
+    "calibration_all_cv_pct": 0.6682833210532577,
+    "learning_rate": 0.0003,
+    "seconds": 1.9039753330000018
+  },
+  "checkpoint_sha256": "cedb14fec3b7dfbcf1cc6d9788250f89d621b41b4ba8bf41e1c292b651c5d31e",
+  "basis": "Qualified calibration median per-star CV only",
+  "confirmation_or_test_used": false,
+  "epochs_completed": 28,
+  "stop_reason": "calibration patience",
+  "frozen_utc": "2026-10-17T04:22:41.170199+00:00"
+}
