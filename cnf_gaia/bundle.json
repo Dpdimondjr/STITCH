@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "cnf",
+  "target": "gaia_rp",
+  "reference_family": "hgb",
+  "status": "Matched full-data research CNF; no automatic promotion",
+  "source_checkpoint_sha256": "cedb14fec3b7dfbcf1cc6d9788250f89d621b41b4ba8bf41e1c292b651c5d31e",
+  "hgb_bundle_sha256": "f6d9e9efad28fb46150fb2a1426faaf0de750db54c3414b1e825d35d3205b2ae",
+  "sha256": {
+    "cohort_manifest.parquet": "a1ca1bf705ae3954cff15a0db08aa2ee1213f8b941e39288475b06f8b7a07c5b",
+    "color_fold_0.pkl": "d31ae0737011db667bdab223588495412ca4df3bb92a8bfd53e6f1dac9c0495c",
+    "color_fold_1.pkl": "4ec889208fc7edd0737d990dd79627578d0d65f7f70de5e860d6b2996096745e",
+    "color_fold_2.pkl": "78f3d80c8419583fcaad0ab42a78da871ac23090169f702cafaf97861bb3de8b",
+    "color_fold_3.pkl": "adb60e1a9ec8c4b5ab6818d88fcccb915646f2b3e525d72dccf04981812afb91",
+    "color_fold_4.pkl": "62ca1904fa58b9be3822c7cfec0fc93ca8abbebe49c0e7b981cfe4c9c7f2c3d4",
+    "identity_catalog.parquet": "2df57a66911de487abb8d8d254d6d207b4e2782a1861c890720b7db22aaaf324",
+    "model.json": "f704168058eb4fc8c72a613192960bf1fff83831703c67d768a3547a1c31d668",
+    "model.pt": "dd75d3bc27fe5cdc3c3c4c5750c0d29bdd58fb42f488c7c3a89deb103fec539f",
+    "reference_bank.parquet": "eab87f3f8429a188f9111ce8b35c8b05bd48165dfd8d6937c51e5c1f67c6468f",
+    "thermal.parquet": "9341a55dc54e7519d26a3f2f281b5bf4625e08e7a0f5793ebf444a8f591b89d8",
+    "training_protocol.json": "73a97092100ee63f52fea8cd0c802984898a1aa045cdfc7bef6070c2f6aa452a"
+  }
+}

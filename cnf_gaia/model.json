@@ -1,0 +1,26 @@
+{
+  "target": "gaia_rp",
+  "reference_family": "hgb",
+  "prior": "pred_knn",
+  "beta": 1.0,
+  "clip": null,
+  "estimator": "conditional median",
+  "epoch": 16,
+  "source_checkpoint_sha256": "cedb14fec3b7dfbcf1cc6d9788250f89d621b41b4ba8bf41e1c292b651c5d31e",
+  "protocol_sha256": "73a97092100ee63f52fea8cd0c802984898a1aa045cdfc7bef6070c2f6aa452a",
+  "calibration_metrics": {
+    "epoch": 16,
+    "training_nll": 0.5304300131658022,
+    "calibration_nll": 0.6767116429576701,
+    "calibration_qualified_cv_pct": 0.6152796506554051,
+    "calibration_all_cv_pct": 0.6682833210532577,
+    "learning_rate": 0.0003,
+    "seconds": 1.9039753330000018
+  },
+  "historical_checkpoint": false,
+  "new_gaia_cnf": true,
+  "training_rows": 457123,
+  "training_stars": 36507,
+  "default_model_promoted": false,
+  "long_baseline_preservation_validated": false
+}
