@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STITCH · Star grid + full light curves</title>
+<style>
+/* ── Tokens ──────────────────────────────────────────────────────────── */
+:root{
+  --bg:#0e1118;--surface:#161b27;--card:#1c2130;--border:#252d40;
+  --text:#d8dce8;--muted:#5e6580;--faint:#2a3148;
+  --accent:#4d9ef7;--green:#3dbf82;--red:#e05c5c;--yellow:#d4901a;
+  --cam1:#e07050;--cam2:#4d9ef7;--cam3:#2ec492;--cam4:#d4901a;
+  --tr:#4d9ef7;--va:#d4901a;--te:#3dbf82;
+}
+@media(prefers-color-scheme:light){:root{
+  --bg:#f0f2f7;--surface:#fff;--card:#fff;--border:#d4d8e8;
+  --text:#1a1e2e;--muted:#7a8099;--faint:#e4e8f2;
+  --accent:#2272d8;--green:#1e9e60;--red:#c53030;--yellow:#b07010;
+  --cam1:#c05030;--cam2:#2272d8;--cam3:#168a5a;--cam4:#b07010;
+  --tr:#2272d8;--va:#b07010;--te:#1e9e60;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1118;--surface:#161b27;--card:#1c2130;--border:#252d40;
+  --text:#d8dce8;--muted:#5e6580;--faint:#2a3148;
+  --accent:#4d9ef7;--green:#3dbf82;--red:#e05c5c;--yellow:#d4901a;
+  --cam1:#e07050;--cam2:#4d9ef7;--cam3:#2ec492;--cam4:#d4901a;
+  --tr:#4d9ef7;--va:#d4901a;--te:#3dbf82;
+}
+:root[data-theme="light"]{
+  --bg:#f0f2f7;--surface:#fff;--card:#fff;--border:#d4d8e8;
+  --text:#1a1e2e;--muted:#7a8099;--faint:#e4e8f2;
+  --accent:#2272d8;--green:#1e9e60;--red:#c53030;--yellow:#b07010;
+  --cam1:#c05030;--cam2:#2272d8;--cam3:#168a5a;--cam4:#b07010;
+  --tr:#2272d8;--va:#b07010;--te:#1e9e60;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;
+  font-size:13px;display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+
+/* ── Chrome ────────────────────────────────────────────────────────────── */
+.hdr{height:48px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.hdr-sub{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.legend{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted)}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-sw{width:18px;height:3px;border-radius:2px}
+.theme-btn{background:var(--faint);border:1px solid var(--border);color:var(--muted);
+  border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer}
+.theme-btn:hover{color:var(--text)}
+
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+.tab-bar{
+  display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 16px;gap:2px;flex-shrink:0;
+}
+.tab-btn{
+  padding:9px 16px;font-size:12px;font-weight:600;border:none;background:none;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:color .12s;letter-spacing:.01em;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none;flex:1;min-height:0;overflow:hidden}
+.tab-panel.active{display:flex;flex-direction:column}
+
+/* ── Stats bar ────────────────────────────────────────────────────────── */
+.stats-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  gap:1px;flex-shrink:0}
+.stat{flex:1;padding:8px 14px;background:var(--surface);display:flex;flex-direction:column;gap:1px}
+.sv{font-size:17px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sv-b{color:var(--accent)}.sv-g{color:var(--green)}.sv-r{color:var(--red)}
+.sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── LC Tab Layout ────────────────────────────────────────────────────── */
+.lc-layout{display:flex;flex:1;min-height:0;overflow:hidden}
+.sidebar{width:218px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;padding:11px;display:flex;flex-direction:column;gap:13px}
+.main{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* ── Sidebar controls ─────────────────────────────────────────────────── */
+.fgl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.fgr{display:flex;flex-wrap:wrap;gap:3px}
+.tog{padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--card);
+  color:var(--muted);cursor:pointer;font-size:11px;font-weight:500;transition:background .1s,color .1s}
+.tog:hover{color:var(--text)}
+.tog.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tog.c1.active{background:var(--cam1);border-color:var(--cam1)}
+.tog.c2.active{background:var(--cam2);border-color:var(--cam2)}
+.tog.c3.active{background:var(--cam3);border-color:var(--cam3)}
+.tog.c4.active{background:var(--cam4);border-color:var(--cam4)}
+.tog.tg.active{background:var(--green);border-color:var(--green)}
+.tog.tr.active{background:var(--red);border-color:var(--red)}
+.rr{display:flex;align-items:center;gap:4px;margin-top:3px}
+.rl{font-size:11px;color:var(--muted);min-width:24px}
+.ri{width:72px;background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:5px;padding:3px 6px;font-size:12px;font-variant-numeric:tabular-nums;outline:none}
+.ri:focus{border-color:var(--accent)}
+.rs{color:var(--muted);font-size:11px}
+.sel{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:5px;padding:4px 7px;font-size:12px;outline:none;cursor:pointer}
+.sel:focus{border-color:var(--accent)}
+.tinp{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);
+  border-radius:5px;padding:4px 7px;font-size:12px;outline:none}
+.tinp::placeholder{color:var(--muted)}
+.tinp:focus{border-color:var(--accent)}
+.reset-btn{width:100%;padding:6px;background:var(--faint);border:1px solid var(--border);
+  color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px}
+.reset-btn:hover{color:var(--text);background:var(--border)}
+
+/* ── Card grid ────────────────────────────────────────────────────────── */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rc{font-size:12px;color:var(--muted)}.rc strong{color:var(--text)}
+.vbtns{display:flex;gap:3px;margin-left:auto}
+.vbtn{padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:var(--card);
+  color:var(--muted);cursor:pointer;font-size:11px}
+.vbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(254px,1fr));gap:8px}
+.card-grid.wide{grid-template-columns:repeat(auto-fill,minmax(338px,1fr))}
+.star-card{background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:9px 11px 7px;cursor:pointer;transition:border-color .12s;
+  display:flex;flex-direction:column;gap:6px}
+.star-card:hover{border-color:var(--accent)}
+.ct{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tl{font-size:12px;font-weight:700;color:var(--text);flex:1;font-variant-numeric:tabular-nums}
+.badge{padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.bc1{background:color-mix(in srgb,var(--cam1)18%,var(--faint));color:var(--cam1)}
+.bc2{background:color-mix(in srgb,var(--cam2)18%,var(--faint));color:var(--cam2)}
+.bc3{background:color-mix(in srgb,var(--cam3)18%,var(--faint));color:var(--cam3)}
+.bc4{background:color-mix(in srgb,var(--cam4)18%,var(--faint));color:var(--cam4)}
+.bg{background:color-mix(in srgb,var(--green)16%,var(--faint));color:var(--green)}
+.br{background:color-mix(in srgb,var(--red)16%,var(--faint));color:var(--red)}
+.bm{background:var(--faint);color:var(--muted)}
+.bsh{background:color-mix(in srgb,var(--green)14%,var(--faint));color:var(--green)}
+.bsm{background:color-mix(in srgb,var(--yellow)16%,var(--faint));color:var(--yellow)}
+.bsl{background:color-mix(in srgb,var(--red)14%,var(--faint));color:var(--red)}
+.sw{border-radius:4px;overflow:hidden;background:var(--bg)}
+.sw svg{display:block}
+.cb{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.st{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.st strong{color:var(--text)}
+.load-more{text-align:center;padding:12px}
+.load-btn{padding:6px 20px;background:var(--faint);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);cursor:pointer;font-size:12px}
+.load-btn:hover{background:var(--border)}
+
+/* ── Modal (centered) ────────────────────────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:200;align-items:center;justify-content:center;padding:24px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  width:100%;max-width:860px;max-height:80vh;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;padding:18px 22px 22px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.mhdr{display:flex;align-items:flex-start;gap:12px}
+.mtitle{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.mmeta{font-size:12px;color:var(--muted);font-family:ui-monospace,monospace;line-height:1.7;margin-top:4px}
+.close-btn{margin-left:auto;background:var(--faint);border:1px solid var(--border);
+  color:var(--muted);border-radius:6px;padding:3px 9px;cursor:pointer;flex-shrink:0}
+.close-btn:hover{color:var(--text)}
+.canv-wrap{overflow-x:auto;border-radius:6px;background:var(--card)}
+canvas{display:block}
+
+/* ── Dataset Explorer Tab ─────────────────────────────────────────────── */
+.exp-layout{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.exp-fbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:8px 14px;flex-shrink:0;
+}
+.exp-fbar .fgl{margin-bottom:0}
+.exp-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+.chart-card.full{grid-column:1/-1}
+.cc-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:.01em}
+.cc-sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+.chart-area{overflow-x:auto}
+.chart-area svg{display:block}
+.split-legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:8px}
+.split-leg-item{display:flex;align-items:center;gap:5px}
+.sli{width:18px;height:3px;border-radius:2px}
+.sli-tr{background:var(--tr)}
+.sli-va{background:var(--va)}
+.sli-te{background:var(--te)}
+
+ .grid-note{font-size:11px;color:var(--muted);padding:8px 14px;line-height:1.5;flex-shrink:0}.stat-sub{font-size:10px;color:var(--muted)}
+ .tab-bar a{text-decoration:none}.improve{color:var(--green)}.harm{color:var(--red)}.star-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+ .stats-bar{flex-wrap:wrap}.stat{min-width:145px}.sidebar .sel{margin-bottom:5px}.grid-note a{color:var(--accent)}
+ @media(max-width:650px){.hdr-sub{display:none}.stats-bar .stat{min-width:120px;flex:1 1 30%;padding:7px 10px}.sv{font-size:19px}.tab-bar{overflow:auto;white-space:nowrap}.sidebar{width:165px;flex:0 0 165px;padding:10px}.main{padding:10px}.card-grid,.card-grid.wide{grid-template-columns:1fr}.overlay{padding:10px}.modal{padding:14px;max-height:90vh}.grid-note{font-size:10px}}
+/* Added popup content only; preserve original grid, sidebar, modal and colors. */
+.modal>*{flex-shrink:0}
+.cadence-detail{--blue:#60b3ff;--gray:#b4b8c2;min-width:0;color:var(--text);line-height:1.5}
+.cadence-detail .panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+.cadence-detail h2{font-size:16px;margin:0}.cadence-detail p{margin:8px 0}
+.cadence-detail .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cadence-detail .muted,.cadence-detail .hint{color:var(--text);opacity:.72}
+.cadence-detail .tag{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+.cadence-detail .action,.cadence-detail select{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px;font:inherit;cursor:pointer}
+.cadence-detail .action{font-size:11px}.cadence-detail label{font-size:12px}
+.cadence-detail .hint,.cadence-detail .axis{font-size:11px}.cadence-detail .axis{text-align:center;color:var(--text)}
+.cadence-detail .plots{position:relative;background:#161b27;border-radius:6px}
+.cadence-detail .plot{display:block;width:100%;height:225px;touch-action:none;cursor:crosshair}
+.cadence-detail .plot-title{margin:0 0 0 68px;padding-top:10px;font-size:12px;font-weight:600}
+.cadence-detail .selection{position:absolute;pointer-events:none;background:#60b3ff26;border-left:1px solid #60b3ff;border-right:1px solid #60b3ff;display:none;top:0;bottom:0}
+.cadence-detail .legend{flex-wrap:wrap;line-height:1.8;color:var(--text);margin:10px 0}
+.cadence-detail .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.cadence-detail .bar{display:inline-block;width:17px;height:2px;background:#fff;border:1px solid #777;vertical-align:middle;margin-right:4px}
+.cadence-detail details{margin-top:10px}.cadence-detail summary{cursor:pointer;font-weight:600}
+.cadence-detail .scroll{overflow:auto;max-height:260px;margin-top:8px}
+.cadence-detail table{border-collapse:collapse;width:100%;font-size:11px;white-space:nowrap}
+.cadence-detail th,.cadence-detail td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--border)}
+.cadence-detail th{position:sticky;top:0;background:var(--surface)}
+.cadence-detail tr[data-sector]{cursor:pointer}.cadence-detail tr[data-sector]:hover{background:var(--surface)}
+.cadence-detail .tip{position:fixed;pointer-events:none;background:#0e1118f5;color:#e0e5f0;border:1px solid #7184a6;border-radius:6px;padding:8px 10px;font-size:12px;display:none;z-index:300;max-width:320px}
+.cadence-detail button:focus-visible,.cadence-detail select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="hdr">
+  <span class="hdr-title">STITCH</span>
+  <span class="hdr-sub">STITCH · supplied corrections · Light-curve review</span>
+  <div class="hdr-right">
+    <div class="legend">
+      <div class="leg-item"><div class="leg-sw" style="background:rgba(150,155,180,.5)"></div><span id="legendReference">Raw</span></div>
+      <div class="leg-item"><div class="leg-sw" style="background:var(--accent)"></div>STITCH</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">&#9680;</button>
+  </div>
+</header>
+
+<div class="tab-bar"><button class="tab-btn active">Star grid</button></div><div class="tab-panel active" id="tab-lc">
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+<div class="stat"><div class="sv sv-b" id="statStars">—</div><div class="sl">Test Stars · Matching Filters</div><div class="stat-sub" id="statCoverage"></div></div>
+<div class="stat"><div class="sv sv-g" id="statImprovement">—</div><div class="sl">Median Improvement (n≥5)</div><div class="stat-sub" id="statN5"></div></div>
+<div class="stat"><div class="sv sv-r" id="statHarmRate">—</div><div class="sl">Harm Rate (n≥5)</div><div class="stat-sub" id="statHarmDenominator"></div></div>
+<div class="stat"><div class="sv" id="statHarmed">—</div><div class="sl" id="statHarmedLabel">Harmed Total</div><div class="stat-sub">Any CV increase vs selected reference</div></div>
+<div class="stat"><div class="sv sv-b" id="statCVZ">—</div><div class="sl">CVZ Stars (n≥30)</div><div class="stat-sub">Sector-count proxy; not a sky-location test</div></div>
+</div><div class="grid-note" id="coverageNote"></div><div class="lc-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar"><div><label class="fgl" for="sectorView">Sector view</label><select class="sel" id="sectorView"><option value="all">All retained sectors</option><option value="qualified">TARS-qualified sectors (&gt;0.95)</option></select></div>
+<div><label class="fgl" for="reference">Improvement compared with</label><select class="sel" id="reference"><option value="raw">Raw sector medians</option><option value="baseline">Matched HGB baseline</option></select></div>
+
+      <div><div class="fgl">Observed camera</div>
+        <div class="fgr" id="camTogs">
+          <button class="tog active" data-cam="0">All</button>
+          <button class="tog c1" data-cam="1">Cam 1</button>
+          <button class="tog c2" data-cam="2">Cam 2</button>
+          <button class="tog c3" data-cam="3">Cam 3</button>
+          <button class="tog c4" data-cam="4">Cam 4</button>
+        </div>
+      </div>
+      <div><div class="fgl">Dominant CCD</div>
+        <div class="fgr" id="ccdTogs">
+          <button class="tog active" data-ccd="0">All</button>
+          <button class="tog" data-ccd="1">CCD 1</button>
+          <button class="tog" data-ccd="2">CCD 2</button>
+          <button class="tog" data-ccd="3">CCD 3</button>
+          <button class="tog" data-ccd="4">CCD 4</button>
+        </div>
+      </div>
+      <div><div class="fgl">Status</div>
+        <div class="fgr" id="statusTogs">
+          <button class="tog active" data-st="all">All</button>
+          <button class="tog tg" data-st="improved">Improved</button>
+          <button class="tog tr" data-st="harmed">Harmed</button>
+        </div>
+      </div>
+      <div><div class="fgl">N Sectors</div>
+        <select class="sel" id="nOp" aria-label="Sector count operator"><option value="gte">≥ threshold</option><option value="gt">&gt; threshold</option><option value="eq">= threshold</option><option value="lte">≤ threshold</option><option value="lt">&lt; threshold</option></select><div class="rr"><span class="rl">n</span>
+          <input class="ri" type="number" id="nMin" value="0" min="0" max="85">
+          <span class="rs">max</span>
+          <input class="ri" type="number" id="nMax" value="85" min="0" max="85">
+        </div>
+      </div>
+      <div><div class="fgl">Tmag</div>
+        <div class="rr"><span class="rl">Min</span>
+          <input class="ri" type="number" id="tmagMin" value="5" step="0.1">
+          <span class="rs">–</span>
+          <input class="ri" type="number" id="tmagMax" value="13" step="0.1">
+        </div>
+      </div>
+      <div><div class="fgl">Scatter Before (%)</div>
+        <div class="rr"><span class="rl">Min</span>
+          <input class="ri" type="number" id="scMin" value="0" step="0.1">
+          <span class="rs">–</span>
+          <input class="ri" type="number" id="scMax" value="9" step="0.1">
+        </div>
+      </div>
+
+      <div><div class="fgl">Improvement (%)</div>
+        <div class="rr"><span class="rl">Min</span>
+          <input class="ri" type="number" id="impMin" value="-17902" step="1">
+          <span class="rs">–</span>
+          <input class="ri" type="number" id="impMax" value="100" step="1">
+        </div>
+      </div>
+      <div><div class="fgl">Sort By</div>
+        <select class="sel" id="sortSel">
+          <option value="improv_d">Improvement &#8595;</option>
+          <option value="improv_a">Improvement &#8593;</option>
+          <option value="scbef_d">Scatter Before &#8595;</option>
+          <option value="scbef_a">Scatter Before &#8593;</option>
+          <option value="scaft_a">Scatter After &#8593;</option>
+          <option value="n_d">N Sectors &#8595;</option>
+          <option value="n_a">N Sectors &#8593;</option>
+          <option value="tmag_a">Tmag &#8593;</option>
+          <option value="tmag_d">Tmag &#8595;</option>
+
+        </select>
+      </div>
+      <div><div class="fgl">TIC Search</div>
+        <input class="tinp" type="text" id="ticSearch" placeholder="e.g. 441612383">
+      </div>
+      <button class="reset-btn" id="resetBtn">Reset Filters</button>
+    </aside>
+
+    <!-- Main card area -->
+    <main class="main">
+      <div class="toolbar">
+        <span class="rc" id="rcnt"><strong>—</strong> stars</span>
+        <div class="vbtns">
+          <button class="vbtn active" onclick="setView('small')">Compact</button>
+          <button class="vbtn" onclick="setView('wide')">Wide</button>
+        </div>
+      </div>
+      <div class="card-grid" id="cardGrid"></div>
+      <div class="load-more" id="loadMore" style="display:none">
+        <button class="load-btn" id="loadBtn">Show more</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mhdr">
+      <div>
+        <div class="mtitle" id="mTitle"></div>
+        <div class="mmeta" id="mMeta"></div>
+      </div>
+      <button class="close-btn" id="closeBtn">&#x2715;</button>
+    </div>
+    <p class="grid-note">Measured sector medians; each series is divided by its own selected-sector mean for display. Positive improvement means lower CV. This display normalization does not change Gaia targets or saved corrections.</p><div class="canv-wrap"><canvas id="plot"></canvas></div>
+<p class="grid-note" id="cadenceStatus" role="status"></p>
+<div id="cadenceDetail" class="cadence-detail" hidden>
+<select id="view" hidden><option value="all">All sectors</option><option value="qualified">Qualified</option></select>
+<p class="hint">Full cadence views below always compare input PDCSAP with Corrected. The original sector-median plot above follows your Raw / Baseline choice. TARS selection applies to both. Grey/blue here identify methods; original grid colors identify cameras or harm.</p>
+<section class="panel" aria-label="Full light curve viewer"><div class="toolbar" style="justify-content:space-between"><div><div class="tag">Cadence viewer</div><h2 id="starTitle"></h2></div><button class="action" id="csv">Download this star’s retained cadences (CSV)</button></div>
+<p class="muted" id="detailStats"></p>
+<div class="toolbar"><label>Time range <select id="sector"></select></label><button class="action" id="reset">Reset full baseline</button><label>Flux display <select id="units"><option value="relative">Global-relative flux (%)</option><option value="absolute">Flux (electrons / second)</option></select></label><label><input type="checkbox" id="medians" checked> Show sector medians</label></div>
+<p class="hint">Drag horizontally in either plot to zoom; double-click to reset. Choose a sector or click its table row for a close view. Both plots use the same time and flux limits.</p>
+<div class="plots" id="plots"><div class="plot-title" style="color:var(--gray)">Input PDCSAP · full cadence series</div><canvas id="raw" class="plot" aria-label="Input PDCSAP full light curve"></canvas><div class="plot-title" style="color:var(--blue)">Corrected · full cadence series</div><canvas id="corrected" class="plot" aria-label="Corrected corrected full light curve"></canvas><div id="brush" class="selection"></div></div>
+<div class="axis">TESS time · BJD − 2457000</div><div class="hint" id="range"></div>
+<div class="legend"><span><i class="dot" style="background:var(--gray)"></i>Grey points = input cadence measurements</span><span><i class="dot" style="background:var(--blue)"></i>Blue points = corrected cadence measurements</span><span><i class="bar"></i>White bars = sector medians</span></div>
+<p class="muted" style="font-size:12px">Relative display uses one fixed scale per star and method: the mean of its all-sector medians. No sector is separately normalized. The scale stays fixed when filtering or zooming. Switch to electrons/second to see the applied absolute change.</p>
+<details open><summary>Sector measurements &amp; correction factors</summary><div class="scroll"><table><thead><tr><th>Sector ↗</th><th>Camera / CCD</th><th>TARS score</th><th>Qualified?</th><th>Retained / input</th><th>Input median</th><th>Corrected median</th><th>Applied flux change</th><th>References</th><th>PRF strap overlap</th></tr></thead><tbody id="rows"></tbody></table></div></details>
+</section>
+<div id="tip" class="tip"></div>
+<p class="hint">Finite time and PDCSAP with (QUALITY &amp; 17087)==0. Full means every retained cadence in this star’s benchmark sectors; no binning or clipping. CV reduction is not evidence of long-baseline signal preservation. Gaia RP anchored, five-round Corrected; the model and corrections are unchanged.</p>
+<button class="action" onclick="downloadCadenceProvenance()">Download model &amp; sector provenance</button>
+</div>
+
+  </div>
+</div>
+
+<script>
+const DATA=__DATA__;
+const M=__M__;
+let ALL=[];
+const NCOL={1:"var(--cam1)",2:"var(--cam2)",3:"var(--cam3)",4:"var(--cam4)"};
+const PAGE=60;
+let fView='all',fReference='raw',fNOp='gte',activeTic=null;
+let filtered=[], shown=PAGE, viewMode="small";
+let fCam=0,fCcd=0,fSt="all",fNMin=0,fNMax=M.n_max;
+let fTMin=M.tmag_min,fTMax=M.tmag_max,fScMin=0,fScMax=M.sc_max;
+let fIMin=M.improv_min,fIMax=100,fTic="",sortKey="improv_d";
+
+function gv(s,k){
+  if(k.startsWith("improv")) return s.improv;
+  if(k.startsWith("scbef")) return s.sc_before;
+  if(k.startsWith("scaft")) return s.sc_after;
+  if(k.startsWith("n_")) return s.n;
+  if(k.startsWith("tmag")) return s.tmag??99;
+
+  return s.improv;
+}
+function runLC(){
+  filtered = ALL.filter(s=>{
+    if(fCam && !s.cameras.includes(fCam)) return false;
+    if(fCcd && s.ccd!==fCcd) return false;
+    if(fSt==="improved"&&!(s.improv!=null&&s.improv>0)) return false;
+    if(fSt==="harmed"&&s.harmed!==true) return false;
+    if(!({gte:s.n>=fNMin,gt:s.n>fNMin,eq:s.n===fNMin,lte:s.n<=fNMin,lt:s.n<fNMin}[fNOp])||s.n>fNMax) return false;
+    if((s.tmag??99)<fTMin||(s.tmag??99)>fTMax) return false;
+    if(s.sc_before!=null&&(s.sc_before<fScMin||s.sc_before>fScMax)) return false;
+
+    if(s.improv!=null&&(s.improv<fIMin||s.improv>fIMax)) return false;
+    if(fTic&&!String(s.tic_id).includes(fTic)) return false;
+    return true;
+  });
+  const asc=sortKey.endsWith("_a"), d=asc?1:-1;
+  filtered.sort((a,b)=>{const av=gv(a,sortKey),bv=gv(b,sortKey);if(av==null)return bv==null?a.tic_id-b.tic_id:1;if(bv==null)return -1;return(av<bv?-1:av>bv?1:0)*d});
+  shown=PAGE;
+  updateStats();
+  document.getElementById("rcnt").innerHTML=`<strong>${filtered.length.toLocaleString()}</strong> stars`;
+  renderLC();
+}
+
+function spark(raw,cor,col,w,h){
+  const n=raw.length;
+  if(!n) return `<svg width="${w}" height="${h}"></svg>`;
+  const all=[...raw,...cor];
+  let lo=Math.min(...all),hi=Math.max(...all);
+  const pad=Math.max((hi-lo)*0.2,0.005); lo-=pad; hi+=pad;
+  const rng=hi-lo;
+  const PL=3,PR=3,PT=5,PB=5,pw=w-PL-PR,ph=h-PT-PB;
+  const px=i=>PL+(n===1?pw/2:i/(n-1)*pw);
+  const py=v=>PT+(1-(v-lo)/rng)*ph;
+  const y1=py(1.0);
+  const rp=raw.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`);
+  const cp=cor.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`);
+  const ra=`M${rp[0]}L${rp.join("L")}L${(PL+pw).toFixed(1)},${y1.toFixed(1)}L${PL},${y1.toFixed(1)}Z`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <path d="${ra}" fill="rgba(150,155,180,.12)" stroke="none"/>
+    <path d="M${rp[0]}L${rp.join("L")}" fill="none" stroke="rgba(150,155,180,.4)" stroke-width="1"/>
+    <line x1="${PL}" y1="${y1.toFixed(1)}" x2="${(PL+pw).toFixed(1)}" y2="${y1.toFixed(1)}"
+          stroke="rgba(255,255,255,.06)" stroke-width=".5" stroke-dasharray="2,2"/>
+    <path d="M${cp[0]}L${cp.join("L")}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function mkCard(s,spW){
+  const col=NCOL[s.cam]||"var(--muted)";
+  const iCls=s.harmed?"br":"bg";
+  const iStr=s.improv==null?"CV unavailable":(s.improv>=0?"▲":"▼")+Math.abs(s.improv).toFixed(1)+"%";
+  let sb="";
+  if(s.sys_score!=null){
+    const sc=s.sys_score>=0.999?"bsh":s.sys_score>=0.995?"bsm":"bsl";
+    sb=`<span class="badge ${sc}">sys ${s.sys_score.toFixed(4)}</span>`;
+  }
+  const sv=spark(s.raw_meds,s.cor_meds,col,spW,60);
+  const tm=s.tmag!=null?`<span class="badge bm">T=${s.tmag.toFixed(1)}</span>`:"";
+  return `<div class="star-card" role="button" tabindex="0" aria-label="Open TIC ${s.tic_id}" onclick="detail(${s.tic_id})">
+    <div class="ct"><span class="tl">TIC ${s.tic_id}</span>
+      <span class="badge bc${s.cam}">Cam${s.cam}&#xB7;CCD${s.ccd}</span>
+      <span class="badge ${iCls}">${iStr}</span></div>
+    <div class="sw">${sv}</div>
+    <div class="cb">
+      <span class="st"><strong>${display(s.sc_before,2)}%</strong>&#8594;<strong>${display(s.sc_after,2)}%</strong></span>
+      <span class="badge bm">n=${s.n}</span>${tm}${sb}</div>
+  </div>`;
+}
+
+function renderLC(){
+  const grid=document.getElementById("cardGrid");
+  const spW=viewMode==="wide"?314:230;
+  grid.innerHTML=filtered.slice(0,shown).map(s=>mkCard(s,spW)).join("");
+  const more=document.getElementById("loadMore");
+  const rem=filtered.length-shown;
+  if(rem>0){more.style.display="block";
+    document.getElementById("loadBtn").textContent=`Show more (${rem} remaining)`;
+  } else more.style.display="none";
+}
+
+function setView(m){
+  viewMode=m;
+  document.getElementById("cardGrid").classList.toggle("wide",m==="wide");
+  document.querySelectorAll(".vbtn").forEach((b,i)=>b.classList.toggle("active",i===(m==="wide"?1:0)));
+  renderLC();
+}
+
+// Modal (centered)
+function detail(tic){
+  const s=ALL.find(x=>x.tic_id===tic);
+  if(!s) return;
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById("mTitle").textContent=`TIC ${s.tic_id}`;
+  activeTic=tic;
+  document.getElementById("mMeta").innerHTML=
+    `Dominant Cam ${s.cam} / CCD ${s.ccd} · Tmag ${display(s.tmag,2)} · ${s.n} selected sectors · Observed cameras ${s.cameras.join(', ')||'—'}<br>`+
+    `CV ${display(s.sc_before,3)}% → ${display(s.sc_after,3)}% · <strong class="${s.harmed?'harm':'improve'}">${signed(s.improv)} vs ${fReference==='raw'?'raw':'matched baseline'}</strong>`;
+  drawPlot(s);
+  loadFullCadences(tic,fView);
+}
+
+function drawPlot(s){
+  const canvas=document.getElementById("plot");
+  const wrap=canvas.parentElement;
+  const n=s.sectors.length;
+  if(!n){canvas.width=600;canvas.height=130;canvas.getContext("2d").clearRect(0,0,600,130);return;}
+  const BAR=13,GAP=4,GRP=BAR*2+GAP+7;
+  const W=Math.max(wrap.clientWidth||600,n*GRP+80),H=130;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext("2d");
+  const dark=document.documentElement.dataset.theme!=="light"&&
+    (document.documentElement.dataset.theme==="dark"||window.matchMedia("(prefers-color-scheme:dark)").matches);
+  const sfC=dark?"#1c2130":"#fff", grC=dark?"#252d40":"#dde0ee";
+  const muC=dark?"#5e6580":"#7a8099", rC=dark?"#3a4060":"#b0b5cc";
+  const cc={1:dark?"#e07050":"#c05030",2:dark?"#4d9ef7":"#2272d8",3:dark?"#2ec492":"#168a5a",4:dark?"#d4901a":"#b07010"};
+  const camC=cc[s.cam]||"#888";
+  const PL=48,PR=10,PT=12,PB=22,pH=H-PT-PB,pW=W-PL-PR;
+  const all=[...s.raw_meds,...s.cor_meds];
+  let lo=Math.min(...all),hi=Math.max(...all);
+  const vp=Math.max((hi-lo)*0.2,0.005); lo-=vp; hi+=vp;
+  const yS=v=>PT+pH*(1-(v-lo)/(hi-lo));
+  ctx.fillStyle=sfC; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=grC; ctx.lineWidth=1;
+  ctx.fillStyle=muC; ctx.font="10px ui-monospace,monospace"; ctx.textAlign="right";
+  for(let i=0;i<=4;i++){
+    const v=lo+(hi-lo)*i/4,yy=yS(v);
+    ctx.beginPath(); ctx.moveTo(PL,yy); ctx.lineTo(W-PR,yy); ctx.stroke();
+    ctx.fillText(v.toFixed(4),PL-4,yy+3);
+  }
+  const y1=yS(1.0);
+  ctx.strokeStyle=dark?"rgba(77,158,247,.35)":"rgba(34,114,216,.35)";
+  ctx.lineWidth=.8; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(PL,y1); ctx.lineTo(W-PR,y1); ctx.stroke(); ctx.setLineDash([]);
+  s.sectors.forEach((sec,i)=>{
+    const x=PL+i*GRP+3,yB=yS(1),yR=yS(s.raw_meds[i]),yC=yS(s.cor_meds[i]);
+    ctx.fillStyle=rC;
+    ctx.fillRect(x,Math.min(yR,yB),BAR,Math.max(Math.abs(yR-yB),1));
+    ctx.fillStyle=s.harmed?"#e05c5c":camC; ctx.globalAlpha=.88;
+    ctx.fillRect(x+BAR+GAP,Math.min(yC,yB),BAR,Math.max(Math.abs(yC-yB),1));
+    ctx.globalAlpha=1;
+    ctx.fillStyle=muC; ctx.font="9px system-ui"; ctx.textAlign="center";
+    ctx.fillText(`S${sec}`,x+BAR+GAP/2,H-5);
+  });
+  ctx.fillStyle=rC; ctx.fillRect(PL,3,12,7);
+  ctx.fillStyle=muC; ctx.font="10px system-ui"; ctx.textAlign="left";
+  ctx.fillText(fReference==='raw'?"Raw":"Baseline",PL+15,10);
+  ctx.fillStyle=camC; ctx.fillRect(PL+58,3,12,7);
+  ctx.fillText("STITCH",PL+73,10);
+}
+
+// LC controls
+let dt;
+const deb=fn=>{clearTimeout(dt);dt=setTimeout(fn,200)};
+
+document.querySelectorAll("#camTogs .tog").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#camTogs .tog").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); fCam=+b.dataset.cam; runLC();
+}));
+document.querySelectorAll("#ccdTogs .tog").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#ccdTogs .tog").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); fCcd=+b.dataset.ccd; runLC();
+}));
+document.querySelectorAll("#statusTogs .tog").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#statusTogs .tog").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); fSt=b.dataset.st; runLC();
+}));
+["nMin","nMax","tmagMin","tmagMax","scMin","scMax","impMin","impMax"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",()=>deb(()=>{
+    fNMin=+document.getElementById("nMin").value||0;
+    fNMax=document.getElementById("nMax").value===''?M.n_max:+document.getElementById("nMax").value;
+    fTMin=+document.getElementById("tmagMin").value||M.tmag_min;
+    fTMax=+document.getElementById("tmagMax").value||M.tmag_max;
+    fScMin=+document.getElementById("scMin").value||0;
+    fScMax=+document.getElementById("scMax").value||M.sc_max;
+
+    fIMin=+document.getElementById("impMin").value;
+    fIMax=+document.getElementById("impMax").value;
+    if(isNaN(fIMin))fIMin=M.improv_min;
+    if(isNaN(fIMax))fIMax=100;
+    runLC();
+  }));
+});
+document.getElementById("sortSel").addEventListener("change",e=>{sortKey=e.target.value;runLC()});
+document.getElementById("ticSearch").addEventListener("input",e=>{fTic=e.target.value.trim().replace(/^TIC\s*/i, "");runLC()});
+document.getElementById("loadBtn").addEventListener("click",()=>{shown+=PAGE;renderLC()});
+document.getElementById("closeBtn").addEventListener("click",()=>
+  document.getElementById("overlay").classList.remove("open"));
+document.getElementById("overlay").addEventListener("click",e=>{
+  if(e.target===document.getElementById("overlay"))
+    document.getElementById("overlay").classList.remove("open");
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  fCam=0;fCcd=0;fSt="all";fNMin=0;fNMax=M.n_max;fNOp="gte";document.getElementById("nOp").value="gte";
+  fTMin=M.tmag_min;fTMax=M.tmag_max;fScMin=0;fScMax=M.sc_max;
+  fIMin=M.improv_min;fIMax=100;fTic="";sortKey="improv_d";
+  document.querySelectorAll("#camTogs .tog,#ccdTogs .tog,#statusTogs .tog")
+    .forEach(b=>b.classList.remove("active"));
+  document.querySelector("[data-cam='0']").classList.add("active");
+  document.querySelector("[data-ccd='0']").classList.add("active");
+  document.querySelector("[data-st='all']").classList.add("active");
+  document.getElementById("nMin").value=0;
+  document.getElementById("nMax").value=M.n_max;
+  document.getElementById("tmagMin").value=M.tmag_min;
+  document.getElementById("tmagMax").value=M.tmag_max;
+  document.getElementById("scMin").value=0;
+  document.getElementById("scMax").value=M.sc_max;
+
+  document.getElementById("impMin").value=M.improv_min;
+  document.getElementById("impMax").value=100;
+  document.getElementById("ticSearch").value="";
+  document.getElementById("sortSel").value="improv_d";
+  runLC();
+});
+
+function display(v,n=1){return v==null||!Number.isFinite(v)?'—':v.toFixed(n)}
+function signed(v){return v==null?'—':(v>=0?'+':'')+display(v,1)+'%'}
+function median(values){if(!values.length)return null;const a=values.slice().sort((a,b)=>a-b),i=a.length>>1;return a.length%2?a[i]:(a[i-1]+a[i])/2}
+function updateStats(){
+ const eligible=filtered.filter(s=>s.sc_after!=null),well=eligible.filter(s=>s.n>=5),improvements=well.map(s=>s.improv).filter(v=>v!=null),harmed=eligible.filter(s=>s.harmed),harmedWell=well.filter(s=>s.harmed);
+ document.getElementById('statStars').textContent=filtered.length.toLocaleString();
+ document.getElementById('statCoverage').textContent=filtered.filter(s=>s.n>0).length.toLocaleString()+' with selected data · '+eligible.length.toLocaleString()+' CV eligible';
+ document.getElementById('statImprovement').textContent=signed(median(improvements));
+ document.getElementById('statN5').textContent=improvements.length.toLocaleString()+' stars with defined improvement';
+ document.getElementById('statHarmRate').textContent=well.length?display(100*harmedWell.length/well.length,1)+'%':'—';
+ document.getElementById('statHarmDenominator').textContent=harmedWell.length.toLocaleString()+' / '+well.length.toLocaleString()+' stars with n≥5';
+ document.getElementById('statHarmed').textContent=harmed.length.toLocaleString();
+ document.getElementById('statHarmedLabel').textContent='Harmed Total · '+harmedWell.length.toLocaleString()+' with n≥5';
+ document.getElementById('statCVZ').textContent=filtered.filter(s=>s.n>=30).length.toLocaleString();
+}
+
+function rebuildPopulation(){
+ ALL=DATA.views[fView].stars.map(s=>({...s,sc_before:s['sc_'+fReference],improv:s['improv_'+fReference],raw_meds:s['reference_'+fReference+'_meds'],harmed:s.sc_after==null?null:s.sc_after>s['sc_'+fReference]}));
+ const summary=DATA.views[fView].summary.raw,total=DATA.views.all.summary.raw;
+ document.getElementById('coverageNote').textContent=`${summary.total_records.toLocaleString()} / ${total.total_records.toLocaleString()} observations; ${(total.total_records-summary.total_records).toLocaleString()} excluded by qualification. ${summary.stars_with_data.toLocaleString()} TICs with data; ${summary.metric_stars.toLocaleString()} with ≥2 sectors. Stats follow star filters. Improvement is per-star CV reduction; harm is any increase. n≥30 is a CVZ proxy. User-supplied observations; check selection and coverage. Full cadences available for every displayed sector. Total noise floor unidentified.`;
+ document.getElementById('legendReference').textContent=fReference==='raw'?'Raw':'Baseline';
+ runLC();
+ if(activeTic!=null&&document.getElementById('overlay').classList.contains('open'))detail(activeTic);
+}
+document.getElementById('sectorView').addEventListener('change',e=>{fView=e.target.value;rebuildPopulation()});
+document.getElementById('reference').addEventListener('change',e=>{fReference=e.target.value;rebuildPopulation()});
+document.getElementById('nOp').addEventListener('change',e=>{fNOp=e.target.value;runLC()});
+document.getElementById('cardGrid').addEventListener('keydown',e=>{const card=e.target.closest('.star-card');if(card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const match=card.getAttribute('onclick').match(/detail\((\d+)\)/);if(match)detail(+match[1])}});
+function toggleTheme(){const r=document.documentElement,cur=r.dataset.theme||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark';renderLC();if(activeTic!=null&&document.getElementById('overlay').classList.contains('open'))detail(activeTic)}
+
+rebuildPopulation();
+
+const CADENCE_PACK=__CADENCE_PACK__;
+const CADENCE_MODEL=__CADENCE_MODEL__;
+
+const cadenceCache=new Map();let cadenceRequest=0;
+async function decodeCadences(tic){
+ if(cadenceCache.has(tic)){const s=cadenceCache.get(tic);cadenceCache.delete(tic);cadenceCache.set(tic,s);return s;}
+ const original=CADENCE_PACK[String(tic)];if(!original)throw Error('No full-cadence data for this TIC.');
+ if(typeof DecompressionStream==='undefined')throw Error('Open this HTML in a recent Chrome, Edge, Firefox or Safari version to view embedded light curves.');
+ const bytes=Uint8Array.from(atob(original.packed),c=>c.charCodeAt(0));
+ const buffer=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+ const dv=new DataView(buffer);let offset=0;
+ const sectors=original.sectors.map(r=>{const n=r.retained,time=new Float64Array(n),flux=new Float32Array(n),quality=new Uint32Array(n);for(let i=0;i<n;i++,offset+=8)time[i]=dv.getFloat64(offset,true);for(let i=0;i<n;i++,offset+=4)flux[i]=dv.getFloat32(offset,true);for(let i=0;i<n;i++,offset+=4)quality[i]=dv.getUint32(offset,true);return {...r,time,flux,quality};});
+ if(offset!==buffer.byteLength)throw Error('Cadence payload length mismatch.');
+ const s={tic:original.tic,norms:original.norms,sectors};cadenceCache.set(tic,s);while(cadenceCache.size>3)cadenceCache.delete(cadenceCache.keys().next().value);return s;
+}
+async function loadFullCadences(tic,view){
+ const request=++cadenceRequest,root=document.getElementById('cadenceDetail'),status=document.getElementById('cadenceStatus');
+ root.hidden=true;status.textContent='Opening embedded full light curves…';
+ try{const s=await decodeCadences(tic);if(request!==cadenceRequest)return;root.hidden=false;window.showFullCadences(s,view);const rows=s.sectors.filter(r=>view==='all'||r.qualified);status.textContent=`Full cadence coverage: ${rows.length} / ${s.sectors.length} benchmark sectors in this view · ${rows.reduce((a,r)=>a+r.retained,0).toLocaleString()} retained measurements. No downloads needed to view.`;}catch(e){if(request===cadenceRequest){root.hidden=true;status.textContent='Could not display full light curves: '+e.message;}}
+}
+function downloadCadenceProvenance(){const s=CADENCE_PACK[String(activeTic)],{packed,...star}=s;const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({model:CADENCE_MODEL,star,selection:'Explicit user-supplied predictions and retained QUALITY=0 cadences; inspect source selection separately.'},null,2)],{type:'application/json'}));a.href=url;a.download=`stitch_tic_${activeTic}_provenance.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+
+(()=>{
+'use strict';
+let DATA={stars:[]};
+const root=document.getElementById('cadenceDetail');
+const $=id=>root.querySelector('#'+id), fmt=(x,n=3)=>x==null?'—':x.toFixed(n), count=x=>x.toLocaleString('en-US');
+let selected=0, zoom=null, axes=null;
+const star=()=>DATA.stars[selected], sectors=s=>s.sectors.filter(r=>$('view').value==='all'||r.qualified);
+function metric(rows,k){if(rows.length<2)return null;const a=rows.map(r=>r.medians[k]),m=a.reduce((x,y)=>x+y,0)/a.length;return 100*Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/a.length)/m;}
+function setup(canvas){const box=canvas.getBoundingClientRect(),d=window.devicePixelRatio||1;canvas.width=Math.round(box.width*d);canvas.height=Math.round(box.height*d);const c=canvas.getContext('2d');c.scale(d,d);return {c,w:box.width,h:box.height};}
+function limits(values){let lo=Infinity,hi=-Infinity;for(const v of values){lo=Math.min(lo,v);hi=Math.max(hi,v);}if(!isFinite(lo))return [-1,1];let pad=(hi-lo)*.06||Math.max(1,Math.abs(lo)*.01);return [lo-pad,hi+pad];}
+function value(flux,k,s=star()){return $('units').value==='absolute'?flux:100*(flux/s.norms[k]-1);}
+function mini(canvas,s){const {c,w,h}=setup(canvas),rs=sectors(s);if(!rs.length)return;const xs=rs.map(r=>(r.time[0]+r.time.at(-1))/2),ys=rs.flatMap(r=>r.medians.map((m,k)=>100*(m/s.norms[k]-1))),[yl,yh]=limits(ys),xl=Math.min(...xs)-8,xh=Math.max(...xs)+8;for(let k=0;k<2;k++){c.strokeStyle=c.fillStyle=k?'#60b3ff':'#b4b8c2';c.lineWidth=1;c.beginPath();rs.forEach((r,i)=>{let x=10+(xs[i]-xl)/(xh-xl)*(w-20),y=8+(yh-100*(r.medians[k]/s.norms[k]-1))/(yh-yl)*(h-16);i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();rs.forEach((r,i)=>{let x=10+(xs[i]-xl)/(xh-xl)*(w-20),y=8+(yh-100*(r.medians[k]/s.norms[k]-1))/(yh-yl)*(h-16);c.beginPath();c.arc(x,y,2.5,0,7);c.fill();});}}
+function renderCards(){}
+function renderDetail(){const s=star(),rs=sectors(s);$('starTitle').textContent=`TIC ${s.tic}`;$('detailStats').textContent=`${rs.length} of ${s.sectors.length} sectors · ${count(rs.reduce((a,r)=>a+r.retained,0))} retained of ${count(rs.reduce((a,r)=>a+r.total,0))} input cadences in this sample · sector-median CV ${fmt(metric(rs,0))}% → ${fmt(metric(rs,1))}%`;
+$('sector').innerHTML='<option value="all">Full baseline</option>'+rs.map(r=>`<option value="${r.sector}">Sector ${r.sector} · camera ${r.camera} / CCD ${r.ccd}</option>`).join('');
+$('rows').innerHTML=rs.map(r=>`<tr data-sector="${r.sector}" tabindex="0" role="button" aria-label="Zoom to sector ${r.sector}"><td>Sector ${r.sector} ↗</td><td>${r.camera} / ${r.ccd}</td><td>${fmt(r.score,5)}</td><td>${r.qualified?'Yes':'No'}</td><td>${count(r.retained)} / ${count(r.total)}</td><td>${fmt(r.medians[0])}</td><td>${fmt(r.medians[1])}</td><td>${fmt(100*(1/r.factor-1))}%</td><td>${r.references}</td><td>${fmt(r.strap_overlap,4)}</td></tr>`).join('');root.querySelectorAll('[data-sector]').forEach(el=>{const fn=()=>{$('sector').value=el.dataset.sector;sectorZoom();};el.onclick=fn;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn();}};});draw();}
+function sectorZoom(){const r=sectors(star()).find(r=>String(r.sector)===$('sector').value);zoom=r?[r.time[0]-.2,r.time.at(-1)+.2]:null;draw();}
+function reset(){zoom=null;$('sector').value='all';draw();}
+function draw(){const rs=sectors(star()),times=rs.flatMap(r=>[r.time[0],r.time.at(-1)]);if(!times.length){for(const id of ['raw','corrected']){const {c,w,h}=setup($(id));c.clearRect(0,0,w,h);c.fillStyle='#a0abc0';c.font='12px system-ui';c.textAlign='center';c.fillText('No individually qualified sectors for this star',w/2,h/2);}axes=null;$('range').textContent='0 sectors and 0 retained cadences in this view.';return;}const extent=[Math.min(...times)-2,Math.max(...times)+2],[xl,xh]=zoom||extent;let ymin=Infinity,ymax=-Infinity,n=0;for(const r of rs)for(let i=0;i<r.time.length;i++)if(r.time[i]>=xl&&r.time[i]<=xh){n++;for(let k=0;k<2;k++){const y=value(r.flux[i]/(k?r.factor:1),k);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}}const [yl,yh]=limits([ymin,ymax]);
+['raw','corrected'].forEach((id,k)=>{const {c,w,h}=setup($(id)),left=68,right=16,top=12,bottom=30,pw=w-left-right,ph=h-top-bottom,x=t=>left+(t-xl)/(xh-xl)*pw,y=v=>top+(yh-v)/(yh-yl)*ph;axes={xl,xh,yl,yh,left,right,top,bottom,w,h};c.font='11px system-ui';c.fillStyle='#a0abc0';c.strokeStyle='#303950';c.lineWidth=.6;for(let j=0;j<=4;j++){let yy=top+ph*j/4;c.beginPath();c.moveTo(left,yy);c.lineTo(w-right,yy);c.stroke();c.textAlign='right';c.fillText(fmt(yh-(yh-yl)*j/4,$('units').value==='absolute'?0:2),left-9,yy+4);}for(let j=0;j<=5;j++){let xx=left+pw*j/5;c.textAlign='center';c.fillText(fmt(xl+(xh-xl)*j/5,1),xx,h-9);}c.save();c.translate(13,top+ph/2);c.rotate(-Math.PI/2);c.textAlign='center';c.fillText($('units').value==='absolute'?'Flux (e−/s)':'Global-relative flux (%)',0,0);c.restore();c.save();c.beginPath();c.rect(left,top,pw,ph);c.clip();c.fillStyle=k?'#60b3ff':'#b4b8c2';c.globalAlpha=.48;for(const r of rs)for(let i=0;i<r.time.length;i++)if(r.time[i]>=xl&&r.time[i]<=xh)c.fillRect(x(r.time[i])-0.75,y(value(r.flux[i]/(k?r.factor:1),k))-.75,1.5,1.5);c.globalAlpha=1;if($('medians').checked){c.strokeStyle='#ffffff';c.lineWidth=1.2;for(const r of rs){c.beginPath();c.moveTo(x(r.time[0]),y(value(r.medians[k],k)));c.lineTo(x(r.time.at(-1)),y(value(r.medians[k],k)));c.stroke();}}c.restore();if(!n){c.textAlign='center';c.fillStyle='#a0abc0';c.fillText('No retained cadences in this time window',w/2,h/2);}});
+$('range').textContent=`${count(n)} retained cadence measurements in this time window, shown in each panel · ${fmt(xl,2)}–${fmt(xh,2)} BTJD · all visible points included in flux limits.`;}
+let drag=null;
+root.querySelectorAll('.plot').forEach((el,k)=>{el.onpointerdown=e=>{if(!axes)return;const box=el.getBoundingClientRect(),x=Math.max(axes.left,Math.min(axes.w-axes.right,e.clientX-box.left));drag={start:x,el};el.setPointerCapture(e.pointerId);$('tip').style.display='none';};el.onpointermove=e=>{if(!axes)return;const box=el.getBoundingClientRect(),x=Math.max(axes.left,Math.min(axes.w-axes.right,e.clientX-box.left));if(drag){$('brush').style.display='block';$('brush').style.left=Math.min(x,drag.start)+'px';$('brush').style.width=Math.abs(x-drag.start)+'px';return;}const t=axes.xl+(x-axes.left)/(axes.w-axes.left-axes.right)*(axes.xh-axes.xl);let best=null,dist=Infinity;for(const r of sectors(star())){let l=0,h=r.time.length;while(l<h){let m=(l+h)>>1;r.time[m]<t?l=m+1:h=m;}for(const i of [l-1,l])if(i>=0&&i<r.time.length&&Math.abs(r.time[i]-t)<dist){dist=Math.abs(r.time[i]-t);best={r,i};}}if(!best||dist/(axes.xh-axes.xl)*(axes.w-axes.left-axes.right)>12){$('tip').style.display='none';return;}const {r,i}=best;$('tip').innerHTML=`<b>Sector ${r.sector} · ${k?'Corrected':'Input PDCSAP'}</b><br>BTJD ${fmt(r.time[i],6)}<br>Flux ${fmt(r.flux[i]/(k?r.factor:1),4)} e−/s<br>TARS ${fmt(r.score,5)} · ${r.qualified?'qualified':'not qualified'}<br>QUALITY ${r.quality[i]}`;$('tip').style.display='block';$('tip').style.left=Math.max(8,Math.min(e.clientX+14,innerWidth-300))+'px';$('tip').style.top=Math.max(8,Math.min(e.clientY+14,innerHeight-150))+'px';};el.onpointerup=e=>{if(!drag)return;const box=el.getBoundingClientRect(),x=Math.max(axes.left,Math.min(axes.w-axes.right,e.clientX-box.left)),a=drag.start;drag=null;$('brush').style.display='none';if(Math.abs(x-a)>6){const t=v=>axes.xl+(v-axes.left)/(axes.w-axes.left-axes.right)*(axes.xh-axes.xl);zoom=[t(Math.min(a,x)),t(Math.max(a,x))];$('sector').value='all';draw();}};el.onpointercancel=()=>{drag=null;$('brush').style.display='none';};el.onpointerleave=()=>{$('tip').style.display='none';};el.ondblclick=reset;});
+function download(name,text,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+$('csv').onclick=()=>{const s=star(),lines=['tic_id,sector,time_btjd,pdcsap_e_per_s,corrected_e_per_s,quality,systematic_score,tars_qualified,correction_factor'];for(const r of s.sectors)for(let i=0;i<r.time.length;i++)lines.push([s.tic,r.sector,r.time[i],r.flux[i],r.flux[i]/r.factor,r.quality[i],r.score,r.qualified,r.factor].join(','));download(`stitch_tic_${s.tic}_all_retained_cadences.csv`,lines.join('\n'),'text/csv');};
+$('view').onchange=()=>{zoom=null;renderCards();renderDetail();};$('sector').onchange=sectorZoom;$('units').onchange=draw;$('medians').onchange=draw;$('reset').onclick=reset;
+let resized;window.addEventListener('resize',()=>{clearTimeout(resized);resized=setTimeout(()=>{if(DATA.stars.length && root.offsetParent)draw();},120);});window.showFullCadences=(s,view)=>{DATA={stars:[s]};selected=0;zoom=null;$('view').value=view;renderDetail();};
+
+})();
+</script>
+</body></html>

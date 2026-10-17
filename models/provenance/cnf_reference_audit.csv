@@ -1,0 +1,4 @@
+model,rows,sources,own_source_overlap,validation_test_overlap
+pairwise,367928,29499,0,0
+compact,178541,12839,0,0
+full,178541,12839,0,0

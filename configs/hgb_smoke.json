@@ -1,0 +1,5 @@
+{
+  "max_iter": 2,
+  "max_leaf_nodes": 7,
+  "min_samples_leaf": 4
+}

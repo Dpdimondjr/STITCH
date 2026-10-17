@@ -1,56 +1,12 @@
-# Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
+.pytest_cache/
 .venv/
-venv/
-
-# OS
+build/
+dist/
+*.egg-info/
+artifacts/
+runs/
+*.fits
+*.fits.gz
 .DS_Store
-Thumbs.db
-
-# Claude
-.claude/
-
-# Model weights
-*.pt
-
-# Large data files
-*.feather
-*.parquet
-*.csv
-
-# Downloaded TESS light curves
-tess_cache/
-
-# Generated outputs
-endpoint_baseline_images/
-*_dashboard.html
-stitch_dataset_viewer.html
-eval/dashboard.html
-eval/dashboard_data.json
-
-# Images and media (commit only what's explicitly needed)
-*.png
-*.gif
-*.pdf
-*.jpg
-*.jpeg
-
-# Allow the README figure
-!figures/stitch_lightcurve_grid.png
-
-# Private working notes and correspondence: public Markdown is allowlisted.
-*.md
-!README.md
-!MODEL_VERSIONS.md
-!docs/STATUS.md
-*.html
-logs/
-.agents/
-.codex/

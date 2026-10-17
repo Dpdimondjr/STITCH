@@ -1,5 +1,0 @@
-# Optional bounded PRF pilot, in addition to requirements.txt.
-TESS-PRF==0.1.3
-requests>=2.28
-beautifulsoup4>=4.11
-scipy>=1.10

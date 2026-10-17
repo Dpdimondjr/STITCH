@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stitch-tess"
+version = "0.1.0"
+description = "Reproducible multi-sector TESS calibration research"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = ["numpy>=1.24,<2", "pandas>=2,<3", "scipy>=1.10", "scikit-learn==1.6.1", "joblib>=1.2", "astropy>=5.3,<7", "pyarrow>=12", "requests>=2.28"]
+
+[project.optional-dependencies]
+cnf = ["torch==2.8.0", "zuko==1.5.0"]
+test = ["pytest>=7"]
+
+[project.scripts]
+stitch = "stitch.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"stitch.visualization" = ["*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,137 @@
+{
+  "source_commit": "0041312c64eca71f02360d110065d9a700bae902",
+  "extracted": [
+    {
+      "source": "eval/hgb_reference_repair.py",
+      "sha256": "ef36f1c3edeb3904f3ced37065cfab86c774a7e3ff9645424b16c003a7899d65",
+      "symbols": [
+        "log",
+        "write_json",
+        "sha256"
+      ]
+    },
+    {
+      "source": "eval/hgb_reference_repair.py",
+      "sha256": "ef36f1c3edeb3904f3ced37065cfab86c774a7e3ff9645424b16c003a7899d65",
+      "symbols": [
+        "KEYS",
+        "KS",
+        "SPATIAL",
+        "SECTOR",
+        "STRIPE",
+        "stripe_profiles",
+        "reference_features"
+      ]
+    },
+    {
+      "source": "eval/residual_multiscale_experiment.py",
+      "sha256": "485f81fdc5675211a4a293a8dc0d4929212d396503fda597667ada9a0504d332",
+      "symbols": [
+        "KEYS",
+        "KS",
+        "spatial_features"
+      ]
+    },
+    {
+      "source": "eval/full_physical_rebuild.py",
+      "sha256": "2586604384014049396ab3382bb2866bfdd2f97998c78c30a22d0efae84b07c6",
+      "symbols": [
+        "SEED",
+        "REFCOLS",
+        "GEOMETRY",
+        "CADENCE",
+        "HEADER_MAP",
+        "CADENCE_MAP",
+        "FLAGS",
+        "GEOM_CENTERED",
+        "PHYSICAL_DERIVED",
+        "EXTRA",
+        "hash_bucket",
+        "deviations",
+        "inner_baseline"
+      ]
+    },
+    {
+      "source": "eval/hgb_reference_repair.py",
+      "sha256": "ef36f1c3edeb3904f3ced37065cfab86c774a7e3ff9645424b16c003a7899d65",
+      "symbols": [
+        "DEV_SOURCE",
+        "DEV",
+        "PARAMS",
+        "per_star",
+        "group_median"
+      ]
+    },
+    {
+      "source": "eval/fit_geometry_training_transfer.py",
+      "sha256": "a986925fc1e0c2fab695ed1600b9c2d26f1ee1b589b5db5626ca5400afea1b73",
+      "symbols": [
+        "center",
+        "design"
+      ]
+    },
+    {
+      "source": "eval/gaia_anchor_experiment.py",
+      "sha256": "f3ed70fb510bc7131856ec9134d5730c11ad5e1a7a1f24769582261dc1e69b33",
+      "symbols": [
+        "color_design"
+      ]
+    },
+    {
+      "source": "eval/full_geometry_features.py",
+      "sha256": "0613877aa6838a66aa9d45b262dae77ee87339300178cc0a4b21622729fd4e51",
+      "symbols": [
+        "grid",
+        "tile",
+        "CachedPRF",
+        "header_features"
+      ]
+    },
+    {
+      "source": "eval/extract_geometry_training_transfer.py",
+      "sha256": "57b9279dfa849ffd729e6007638755f25aaccc9685f087c48c04dcd74077d4b6",
+      "symbols": [
+        "positions"
+      ]
+    },
+    {
+      "source": "eval/fast_aperture_geometry.py",
+      "sha256": "012960d935119af6d2230b3b0435a31522b9e588f1c803e87cf0ba75450f03b1",
+      "symbols": [
+        "masses",
+        "feature"
+      ]
+    },
+    {
+      "source": "data/build_full_sap_dataset.py",
+      "sha256": "01b51a742fb72df11d9f3f86fd54b3f6d0c4b5c58ecab26edaaf297aec7a9174",
+      "symbols": [
+        "finite_median",
+        "measure"
+      ]
+    },
+    {
+      "source": "data/collect_full_cadence_metadata.py",
+      "sha256": "0a9395558dd4cc32ff1cf03c70a55ae2d7d00c45e2a98ce2e9ef199690426287",
+      "symbols": [
+        "summarize"
+      ]
+    },
+    {
+      "source": "stitch/_physical_features.py",
+      "sha256": "997f6206c34e7e99e3915eaf6f3cb6ad79949633717c33b1471efa11501bd346",
+      "symbols": [
+        "physical_rows"
+      ]
+    },
+    {
+      "source": "stitch/frozen.py",
+      "sha256": "ebf0c18b7c93b93ffabd234a542343d3eedf58501467ea28e4438ab1dea11f10",
+      "symbols": [
+        "validate_reference_bank",
+        "FrozenPhysicalModel"
+      ]
+    }
+  ],
+  "changes": "Paths/imports parameterized; numerical parity must be checked before publication."
+}

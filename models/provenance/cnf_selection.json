@@ -1,0 +1,16 @@
+{
+  "model": "pairwise",
+  "checkpoint": "eval/pairwise_global_nsf_results/model.pt",
+  "checkpoint_sha256": "30911c27379148ea6512101704ed9fc16b632ec020a7c2ae034e776fdf564771",
+  "calibration_ranking": {
+    "pairwise": 0.9786320752791634,
+    "production": 1.1191239662238468,
+    "full": 1.2616389208145478,
+    "compact": 1.333150600475501
+  },
+  "evaluation_outcomes_used": false,
+  "protocol_sha256": "ed408835ba16176b91a1c8cb5ae69cc4ebdf9598513dcd4275e9c3a6360993c0",
+  "adapter_sha256": "5fe50ef84c7b91bd820db5d4824ed71353aee922181565b580f72004eefcf50e",
+  "quadrature_nodes_per_interval": 64,
+  "alpha": 0.05
+}
