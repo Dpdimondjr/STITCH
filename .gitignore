@@ -50,6 +50,7 @@ eval/dashboard_data.json
 !README.md
 !MODEL_VERSIONS.md
 !docs/STATUS.md
+!docs/SCIENCE_APPLICATION.md
 *.html
 logs/
 .agents/

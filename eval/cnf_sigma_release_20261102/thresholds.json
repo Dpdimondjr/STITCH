@@ -1,0 +1,12 @@
+{
+  "source": "eval/sigma_cut_20261023/sectors.parquet",
+  "source_sha256": "638263506780edca64974085346f12e59494702b3febbf483ecff35852539a04",
+  "population": "qualified quiet confirmation star-sectors",
+  "rows": 28296,
+  "stars": 2278,
+  "sigma_units": "per cent of flux (100 x std of log correction over 256 samples)",
+  "keep80_sigma_pct": 1.3327738641892988,
+  "keep50_sigma_pct": 0.8840330044304535,
+  "median_sigma_pct": 0.8840330044304535,
+  "created_utc": "2026-11-01T23:31:18.466518+00:00"
+}
